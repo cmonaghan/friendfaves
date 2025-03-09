@@ -24,3 +24,6 @@ export const currentStorageProvider = isDemo ? StorageProvider.LOCAL_STORAGE : S
 export const getIsAuthenticated = () => {
   return !!localStorage.getItem('supabase.auth.token');
 };
+
+// Show test data for visitors
+export const SHOW_TEST_DATA_FOR_VISITORS = true;

@@ -5,9 +5,10 @@ import { getRecommendations } from '@/utils/storage';
 import RecommendationCard from '@/components/RecommendationCard';
 import { RecommendationType } from '@/utils/types';
 import { useStaggeredAnimation } from '@/utils/animations';
-import { Search, Filter, Check, SortAsc, SortDesc } from 'lucide-react';
+import { Search, Filter, Check, SortAsc, SortDesc, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/contexts/AuthProvider';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,7 @@ import {
 const RecommendationList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const typeParam = searchParams.get('type') as RecommendationType | null;
+  const { user } = useAuth();
   
   const [activeTab, setActiveTab] = useState<string>(typeParam || 'all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -105,9 +107,24 @@ const RecommendationList = () => {
   
   return (
     <div className="max-w-screen-xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">All Recommendations</h1>
-        <p className="text-muted-foreground">Browse and filter all your saved recommendations</p>
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">All Recommendations</h1>
+          <p className="text-muted-foreground">
+            {user 
+              ? "Browse and filter all your saved recommendations" 
+              : "Browse our sample recommendations or sign in to create your own"}
+          </p>
+        </div>
+        
+        {user && (
+          <Button asChild>
+            <a href="/add" className="flex items-center gap-2">
+              <Plus size={16} />
+              Add Recommendation
+            </a>
+          </Button>
+        )}
       </div>
       
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
@@ -198,9 +215,16 @@ const RecommendationList = () => {
               <p className="text-muted-foreground mb-6">
                 {searchQuery ? 'Try changing your search query or filters' : 'Add your first recommendation to get started'}
               </p>
-              <Button asChild>
-                <a href="/add">Add Recommendation</a>
-              </Button>
+              {user && (
+                <Button asChild>
+                  <a href="/add">Add Recommendation</a>
+                </Button>
+              )}
+              {!user && (
+                <Button asChild>
+                  <a href="/auth">Sign in to add recommendations</a>
+                </Button>
+              )}
             </div>
           )}
         </TabsContent>

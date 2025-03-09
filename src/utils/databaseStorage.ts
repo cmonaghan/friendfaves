@@ -1,6 +1,5 @@
-
 import { Person, Recommendation, RecommendationType } from './types';
-import { dbConfig } from './storageConfig';
+import { dbConfig, SHOW_TEST_DATA_FOR_VISITORS } from './storageConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { mockPeople, mockRecommendations } from './mockData';
 
@@ -59,10 +58,13 @@ const getRecommendations = async (): Promise<Recommendation[]> => {
     // In a real implementation, this would query the database for user-specific data
     // For this example, we're using the in-memory store which would be empty for authenticated users
     return [...recommendationsStore];
-  } else {
-    console.log('Fetching mock recommendations for unauthenticated user');
+  } else if (SHOW_TEST_DATA_FOR_VISITORS) {
+    console.log('Fetching mock recommendations for unauthenticated visitor');
     // Return mock data for unauthenticated users
     return [...mockRecommendations];
+  } else {
+    console.log('Unauthorized access attempt');
+    return [];
   }
 };
 
@@ -76,9 +78,12 @@ const getRecommendationById = async (id: string): Promise<Recommendation | undef
   if (session) {
     console.log(`Fetching user-specific recommendation with ID ${id} from database`);
     return recommendationsStore.find(rec => rec.id === id);
-  } else {
-    console.log(`Fetching mock recommendation with ID ${id} for unauthenticated user`);
+  } else if (SHOW_TEST_DATA_FOR_VISITORS) {
+    console.log(`Fetching mock recommendation with ID ${id} for unauthenticated visitor`);
     return mockRecommendations.find(rec => rec.id === id);
+  } else {
+    console.log('Unauthorized access attempt');
+    return undefined;
   }
 };
 
@@ -92,9 +97,12 @@ const getRecommendationsByType = async (type: RecommendationType): Promise<Recom
   if (session) {
     console.log(`Fetching user-specific recommendations of type ${type} from database`);
     return recommendationsStore.filter(rec => rec.type === type);
-  } else {
-    console.log(`Fetching mock recommendations of type ${type} for unauthenticated user`);
+  } else if (SHOW_TEST_DATA_FOR_VISITORS) {
+    console.log(`Fetching mock recommendations of type ${type} for unauthenticated visitor`);
     return mockRecommendations.filter(rec => rec.type === type);
+  } else {
+    console.log('Unauthorized access attempt');
+    return [];
   }
 };
 

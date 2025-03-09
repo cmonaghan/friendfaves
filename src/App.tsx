@@ -36,13 +36,7 @@ const App = () => {
               <Route path="/auth" element={<Layout><Auth /></Layout>} />
               <Route 
                 path="/recommendations" 
-                element={
-                  <Layout>
-                    <RequireAuth>
-                      <RecommendationList />
-                    </RequireAuth>
-                  </Layout>
-                } 
+                element={<Layout><RecommendationList /></Layout>} 
               />
               <Route 
                 path="/recommendation/:id" 
