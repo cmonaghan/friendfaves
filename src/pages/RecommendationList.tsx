@@ -200,6 +200,7 @@ const RecommendationList = () => {
           <TabsTrigger value={RecommendationType.MOVIE} className="flex-1">Movies</TabsTrigger>
           <TabsTrigger value={RecommendationType.TV} className="flex-1">TV Shows</TabsTrigger>
           <TabsTrigger value={RecommendationType.RECIPE} className="flex-1">Recipes</TabsTrigger>
+          <TabsTrigger value={RecommendationType.RESTAURANT} className="flex-1">Restaurants</TabsTrigger>
         </TabsList>
         
         <TabsContent value={activeTab} className="mt-0">

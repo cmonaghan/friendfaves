@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType } from '@/utils/types';
 import RecommendationCard from '@/components/RecommendationCard';
-import { ArrowRight, Book, Film, Tv, Utensils } from 'lucide-react';
+import { ArrowRight, Book, Film, Tv, Utensils, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -37,6 +37,7 @@ const Index = () => {
     { type: RecommendationType.MOVIE, label: 'Movies', icon: Film, color: 'bg-purple-50' },
     { type: RecommendationType.TV, label: 'TV Shows', icon: Tv, color: 'bg-pink-50' },
     { type: RecommendationType.RECIPE, label: 'Recipes', icon: Utensils, color: 'bg-green-50' },
+    { type: RecommendationType.RESTAURANT, label: 'Restaurants', icon: Store, color: 'bg-amber-50' },
   ];
   
   // Filter recommendations by active tab
