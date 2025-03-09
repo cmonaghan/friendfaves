@@ -40,7 +40,7 @@ export const mockRecommendations: Recommendation[] = [
     title: 'Everything Everywhere All at Once',
     type: RecommendationType.MOVIE,
     recommender: mockPeople[1],
-    reason: 'Mind-bending multiverse story with heart. It's funny, sad, and thought-provoking all at once.',
+    reason: 'Mind-bending multiverse story with heart. It\'s funny, sad, and thought-provoking all at once.',
     source: 'Available on Prime Video',
     date: '2023-06-22',
     isCompleted: true
