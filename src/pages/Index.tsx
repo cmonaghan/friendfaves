@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
@@ -7,14 +8,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthProvider';
 import { getRecommendations, getCustomCategories } from '@/utils/storage';
+import { useStaggeredAnimation } from '@/utils/animations';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<RecommendationType | string>(RecommendationType.BOOK);
   const categoryRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null); // Add missing cardsRef
   const { user } = useAuth();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
+  
+  // Apply staggered animation to the cards
+  useStaggeredAnimation(cardsRef, 100, 200);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -51,6 +57,22 @@ const Index = () => {
     
     fetchData();
   }, [user]);
+  
+  // Count recommendations by type or custom category
+  const getCategoryCount = (categoryType: RecommendationType | string) => {
+    if (categoryType === RecommendationType.OTHER) {
+      return recommendations.filter(rec => rec.type === RecommendationType.OTHER).length;
+    }
+    
+    const isCustomCategory = customCategories.some(cat => cat.type === categoryType);
+    if (isCustomCategory) {
+      return recommendations.filter(
+        rec => rec.type === RecommendationType.OTHER && rec.customCategory === categoryType
+      ).length;
+    }
+    
+    return recommendations.filter(rec => rec.type === categoryType).length;
+  };
   
   const defaultCategories = [
     { type: RecommendationType.BOOK, label: 'Books', icon: Book, color: 'bg-blue-50' },
@@ -143,7 +165,7 @@ const Index = () => {
                   <category.icon size={24} />
                 </div>
                 <h3 className="font-semibold mb-1">{category.label}</h3>
-                <p className="text-2xl font-bold">{category.count}</p>
+                <p className="text-2xl font-bold">{getCategoryCount(category.type)}</p>
               </CardContent>
             </Card>
           ))}
