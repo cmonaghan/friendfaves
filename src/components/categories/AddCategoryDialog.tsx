@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthProvider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { addCustomCategory } from "@/utils/storage";
 import { queryKeys, useCustomCategories } from "@/hooks/useRecommendationQueries";
 import { CategoryForm } from "./CategoryForm";
-import { CategoryFormValues, colorOptions } from "./types";
+import { CategoryFormValues } from "./types";
 
 interface AddCategoryDialogProps {
   open: boolean;
@@ -21,6 +21,13 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { data: customCategories = [] } = useCustomCategories();
+  
+  // Reset created category when dialog opens
+  useEffect(() => {
+    if (open) {
+      setCreatedCategory(null);
+    }
+  }, [open]);
   
   const handleFormSubmit = async (values: CategoryFormValues) => {
     setIsSubmitting(true);
@@ -94,17 +101,12 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
     onOpenChange(false);
   };
 
-  // Reset the state when the dialog opens
+  // Custom handler for dialog open/close
   const handleOpenChange = (isOpen: boolean) => {
+    // If dialog is closing and we have a created category, ensure callback is called
     if (!isOpen && createdCategory && onCategoryCreated) {
-      // Ensure the callback is called again as a safety measure
       console.log("Ensuring category is set on dialog close:", createdCategory);
       onCategoryCreated(createdCategory);
-    }
-    
-    // Reset the created category when dialog closes
-    if (!isOpen) {
-      setCreatedCategory(null);
     }
     
     onOpenChange(isOpen);
@@ -133,3 +135,6 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
     </Dialog>
   );
 }
+
+// Import at the end to avoid circular dependencies
+import { colorOptions } from './types';

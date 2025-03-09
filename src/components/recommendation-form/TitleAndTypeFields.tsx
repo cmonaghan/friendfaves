@@ -18,6 +18,7 @@ interface TitleAndTypeFieldsProps {
 
 export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsProps) {
   const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
+  const [newlyCreatedCategory, setNewlyCreatedCategory] = useState<string | null>(null);
   // Fetch custom categories from the database
   const { data: customCategories = [] } = useCustomCategories();
   const { user } = useAuth();
@@ -36,8 +37,9 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
   // Function to handle when a new category is created
   const handleCategoryCreated = (categoryType: string) => {
     console.log("Category created, setting form value to:", categoryType);
+    setNewlyCreatedCategory(categoryType);
     
-    // When a new category is created, update the form field with shouldValidate: false
+    // When a new category is created, update the form field
     form.setValue("type", categoryType, {
       shouldValidate: false, // Prevent validation from being triggered
       shouldDirty: true,     // Mark field as dirty
@@ -46,6 +48,38 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
     
     // Call parent onTypeChange to update any dependent state
     onTypeChange(categoryType);
+  };
+  
+  // Handle dialog open/close
+  const handleDialogOpenChange = (open: boolean) => {
+    setShowAddCategoryDialog(open);
+    
+    if (!open) {
+      // If dialog is closed and we have a newly created category, ensure it's selected
+      if (newlyCreatedCategory) {
+        console.log("Dialog closed with new category:", newlyCreatedCategory);
+        
+        // Set form value again when dialog closes to ensure it takes effect
+        setTimeout(() => {
+          form.setValue("type", newlyCreatedCategory, {
+            shouldValidate: false,
+            shouldDirty: true,
+            shouldTouch: true
+          });
+          onTypeChange(newlyCreatedCategory);
+          setNewlyCreatedCategory(null);
+        }, 0);
+      } 
+      // If dialog is closed without a category being created, reset to default
+      else if (form.getValues("type") === RecommendationType.OTHER) {
+        form.setValue("type", RecommendationType.BOOK, {
+          shouldValidate: false,
+          shouldDirty: true,
+          shouldTouch: true
+        });
+        onTypeChange(RecommendationType.BOOK);
+      }
+    }
   };
 
   return (
@@ -111,18 +145,7 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
       {/* Add the AddCategoryDialog component with onCategoryCreated handler */}
       <AddCategoryDialog 
         open={showAddCategoryDialog} 
-        onOpenChange={(open) => {
-          setShowAddCategoryDialog(open);
-          // If dialog is closed without a category being created, reset to default
-          if (!open && form.getValues("type") === RecommendationType.OTHER) {
-            form.setValue("type", RecommendationType.BOOK, {
-              shouldValidate: false,
-              shouldDirty: true,
-              shouldTouch: true
-            });
-            onTypeChange(RecommendationType.BOOK);
-          }
-        }}
+        onOpenChange={handleDialogOpenChange}
         onCategoryCreated={handleCategoryCreated}
       />
     </div>
