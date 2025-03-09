@@ -24,15 +24,18 @@ export const getPeople = async (): Promise<Person[]> => {
     const session = await getCurrentSession();
     
     if (session) {
+      // Get both the user's own profile and profiles they've created
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .not('id', 'eq', session.user.id);
+        .or(`id.neq.${session.user.id},created_by.eq.${session.user.id}`);
       
       if (error) {
         console.error('Error fetching people:', error);
         return [...peopleStore];
       }
+      
+      console.log('Fetched profiles from database:', data);
       
       // Map database results to our Person type and combine with local store
       const dbPeople = data.map(profile => ({
@@ -69,14 +72,24 @@ export const addPerson = async (person: Person): Promise<Person> => {
   if (userAuthenticated) {
     console.log('Adding user-specific person to database');
     
+    // Get the current user's ID to mark as creator
+    const session = await getCurrentSession();
+    
+    if (!session) {
+      console.error('No session found while trying to add person');
+      peopleStore.push(personWithPlaceholder);
+      return personWithPlaceholder;
+    }
+    
     // Add to Supabase database - ensure we're using upsert to handle existing profiles
-    const { error } = await supabase
+    // and tracking which user created this profile
+    const { data, error } = await supabase
       .from('profiles')
       .upsert({
         id: personWithPlaceholder.id,
         name: personWithPlaceholder.name,
         avatar_url: personWithPlaceholder.avatar,
-        // Add updated_at to match the schema requirements
+        created_by: session.user.id, // Add the creator's ID
         updated_at: new Date().toISOString()
       }, { 
         onConflict: 'id',
@@ -85,6 +98,7 @@ export const addPerson = async (person: Person): Promise<Person> => {
     
     if (error) {
       console.error('Error adding person to database:', error);
+      console.error('Error details:', error.details, error.message, error.hint);
       // Still add to local store even if database insert fails
       peopleStore.push(personWithPlaceholder);
     } else {
