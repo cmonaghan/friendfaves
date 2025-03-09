@@ -10,17 +10,28 @@ import { SHOW_TEST_DATA_FOR_VISITORS, ALLOW_VISITOR_RECOMMENDATIONS } from '../s
 import { mockRecommendations } from '../mockData';
 import { getCurrentSession, isAuthenticated } from './session';
 import { getPeople } from './people';
+import { useToast } from '@/hooks/use-toast';
 
 // Initialize hidden recommendations array
 if (typeof window !== 'undefined' && !window.hiddenMockRecommendations) {
   window.hiddenMockRecommendations = [];
 }
 
+// Add a small artificial delay to simulate loading for demo purposes
+const addArtificialDelay = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+};
+
 /**
  * Gets all recommendations from the database
  */
 export const getRecommendations = async (): Promise<Recommendation[]> => {
   await initializeDatabaseStorage();
+  
+  // Add a small artificial delay for better loading experience
+  await addArtificialDelay();
   
   // Get the current session
   const userAuthenticated = await isAuthenticated();

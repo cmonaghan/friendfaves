@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getRecommendations, getCustomCategories } from '@/utils/storage';
@@ -9,6 +8,7 @@ import { Search, Filter, Check, SortAsc, SortDesc, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthProvider';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +30,6 @@ const RecommendationList = () => {
   const typeParam = searchParams.get('type') as RecommendationType | string | null;
   const { user } = useAuth();
   
-  // Updated to use the expanded type
   const [activeTab, setActiveTab] = useState<string>(typeParam || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -39,7 +38,6 @@ const RecommendationList = () => {
   const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Fetch recommendations and custom categories from storage
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -51,12 +49,9 @@ const RecommendationList = () => {
         
         setRecommendations(recommendationsData);
         
-        // Set custom categories from database if user is logged in
-        // or extract from recommendations if not
         if (user && categoriesData.length > 0) {
           setCustomCategories(categoriesData);
         } else {
-          // Extract unique custom categories from recommendations as fallback
           const customCats = recommendationsData
             .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
             .map(rec => ({ 
@@ -64,7 +59,6 @@ const RecommendationList = () => {
               label: rec.customCategory as string 
             }));
           
-          // Remove duplicates by type
           const uniqueCustomCats = Array.from(
             new Map(customCats.map(cat => [cat.type, cat])).values()
           );
@@ -81,7 +75,6 @@ const RecommendationList = () => {
     fetchData();
   }, [user]);
   
-  // Update URL when tab changes
   useEffect(() => {
     if (activeTab === 'all') {
       searchParams.delete('type');
@@ -91,10 +84,8 @@ const RecommendationList = () => {
     setSearchParams(searchParams);
   }, [activeTab, searchParams, setSearchParams]);
   
-  // Filter recommendations
   const filteredRecommendations = recommendations
     .filter(rec => {
-      // Filter by type
       if (activeTab === 'all') {
         return true;
       }
@@ -103,22 +94,18 @@ const RecommendationList = () => {
         return rec.type === RecommendationType.OTHER;
       }
       
-      // Check if it's a custom category
       const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
       if (isCustomCategory) {
         return rec.type === RecommendationType.OTHER && rec.customCategory === activeTab;
       }
       
-      // Regular category
       return rec.type === activeTab;
     })
     .filter(rec => {
-      // Filter by search query
       if (searchQuery && !rec.title.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       
-      // Filter by completion status
       if (!showCompleted && rec.isCompleted) {
         return false;
       }
@@ -126,21 +113,22 @@ const RecommendationList = () => {
       return true;
     })
     .sort((a, b) => {
-      // Sort by date
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
       return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
   
-  // Staggered animation for cards
   const cardsRef = useRef<HTMLDivElement>(null);
   useStaggeredAnimation(cardsRef, 75, 100);
   
   if (loading) {
     return (
       <div className="max-w-screen-xl mx-auto py-12">
-        <div className="flex items-center justify-center min-h-[40vh]">
-          <div className="animate-pulse">Loading recommendations...</div>
+        <div className="flex flex-col items-center justify-center min-h-[40vh]">
+          <LoadingSpinner size={40} text="Loading recommendations..." />
+          <div className="mt-4 bg-muted p-2 px-4 rounded-md text-sm text-muted-foreground">
+            <p>First time here? Your recommendations will appear shortly.</p>
+          </div>
         </div>
       </div>
     );

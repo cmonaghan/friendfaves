@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthProvider';
 import { getRecommendations, getCustomCategories } from '@/utils/storage';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<RecommendationType | string>(RecommendationType.BOOK);
@@ -52,7 +53,10 @@ const Index = () => {
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
-        setLoading(false);
+        // Add a slight delay to ensure the loading animation is visible
+        setTimeout(() => {
+          setLoading(false);
+        }, 500);
       }
     };
     
@@ -162,8 +166,8 @@ const Index = () => {
   if (loading) {
     return (
       <div className="max-w-screen-xl mx-auto">
-        <div className="flex items-center justify-center min-h-[40vh]">
-          <div className="animate-pulse">Loading recommendations...</div>
+        <div className="flex flex-col items-center justify-center min-h-[40vh]">
+          <LoadingSpinner size={40} text="Loading your recommendations..." />
         </div>
       </div>
     );
