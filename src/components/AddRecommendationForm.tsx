@@ -1,15 +1,14 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RecommendationType, Person, CustomCategory } from "@/utils/types";
-import { getPeople, addPerson, addRecommendation, addCustomCategory } from "@/utils/storage";
+import { RecommendationType, Person } from "@/utils/types";
+import { getPeople } from "@/utils/storage";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
 import { Form } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthProvider";
+import { useRecommendationForm } from "@/hooks/useRecommendationForm";
 
 // Import form components
 import { TitleAndTypeFields } from "./recommendation-form/TitleAndTypeFields";
@@ -20,12 +19,16 @@ import { FormActions } from "./recommendation-form/FormActions";
 import { formSchema, RecommendationFormValues } from "./recommendation-form/types";
 
 const AddRecommendationForm = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddingNewFriend, setIsAddingNewFriend] = useState(false);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
-  const navigate = useNavigate();
   const { user } = useAuth();
+  
+  const { isSubmitting, submitRecommendation } = useRecommendationForm(
+    people, 
+    setPeople, 
+    !!user
+  );
 
   useEffect(() => {
     const loadPeople = async () => {
@@ -56,61 +59,7 @@ const AddRecommendationForm = () => {
   });
 
   const onSubmit = async (data: RecommendationFormValues) => {
-    setIsSubmitting(true);
-    
-    try {
-      let recommender: Person;
-      
-      if (isAddingNewFriend && data.newFriendName) {
-        console.log("Adding new friend:", data.newFriendName);
-        const newPerson: Person = {
-          id: uuidv4(),
-          name: data.newFriendName,
-          avatar: `/placeholder.svg`
-        };
-        
-        recommender = await addPerson(newPerson);
-        console.log("Added new friend result:", recommender);
-        
-        setPeople(prevPeople => [...prevPeople, recommender]);
-      } else {
-        recommender = people.find(p => p.id === data.recommenderId)!;
-      }
-      
-      if (isCustomCategory && data.type === RecommendationType.OTHER && data.customCategory && user) {
-        const customCategory: CustomCategory = {
-          type: data.customCategory,
-          label: data.customCategory,
-          color: 'bg-gray-50'
-        };
-        
-        await addCustomCategory(customCategory);
-        console.log("Added custom category:", customCategory);
-      }
-      
-      const newRecommendation = {
-        id: uuidv4(),
-        title: data.title,
-        type: data.type,
-        recommender: recommender,
-        reason: data.reason || undefined,
-        source: data.source || undefined,
-        date: new Date().toISOString().split('T')[0],
-        isCompleted: false,
-        customCategory: isCustomCategory && data.type === RecommendationType.OTHER ? data.customCategory : undefined
-      };
-      
-      await addRecommendation(newRecommendation);
-      console.log("Added recommendation:", newRecommendation);
-      
-      toast.success("Recommendation added successfully!");
-      navigate("/recommendations");
-    } catch (error) {
-      toast.error("Failed to add recommendation. Please try again.");
-      console.error("Error submitting form:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await submitRecommendation(data, isAddingNewFriend, isCustomCategory);
   };
 
   const handleRecommenderChange = (value: string) => {
