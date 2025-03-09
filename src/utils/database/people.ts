@@ -24,30 +24,34 @@ export const getPeople = async (): Promise<Person[]> => {
     const session = await getCurrentSession();
     
     if (session) {
-      // Get both the user's own profile and profiles they've created
+      // Get both the user's own profile and other profiles
+      // Fix: Removed reference to non-existent created_by column
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .or(`id.neq.${session.user.id},created_by.eq.${session.user.id}`);
+        .select('*');
       
       if (error) {
         console.error('Error fetching people:', error);
-        return [...peopleStore];
+        // Return only user-created people from local store, not mock data
+        return [...peopleStore.filter(p => !mockPeople.some(mp => mp.id === p.id))];
       }
       
       console.log('Fetched profiles from database:', data);
       
       // Map database results to our Person type and combine with local store
+      // (filtering out any mock people from the local store)
       const dbPeople = data.map(profile => ({
         id: profile.id,
         name: profile.name || `Friend ${profile.id.substring(0, 4)}`,
         avatar: profile.avatar_url || '/placeholder.svg'
       }));
       
-      return [...dbPeople, ...peopleStore];
+      const nonMockPeopleStore = peopleStore.filter(p => !mockPeople.some(mp => mp.id === p.id));
+      return [...dbPeople, ...nonMockPeopleStore];
     }
     
-    return [...peopleStore];
+    // Return only user-created people from local store, not mock data
+    return [...peopleStore.filter(p => !mockPeople.some(mp => mp.id === p.id))];
   } else {
     console.log('Fetching mock people for unauthenticated user');
     return [...mockPeople];
