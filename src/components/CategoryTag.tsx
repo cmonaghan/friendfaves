@@ -1,5 +1,9 @@
+
 import { RecommendationType } from "@/utils/types";
-import { Book, Film, Tv, Utensils, Store, Headphones, HelpCircle } from "lucide-react";
+import { 
+  Book, Film, Tv, Utensils, Store, Headphones, HelpCircle,
+  PlaneTakeoff, MapPin, Music, Building, Gift, Newspaper, Binoculars 
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCustomCategories } from "@/hooks/useRecommendationQueries";
 
@@ -26,12 +30,23 @@ const CategoryTag = ({ type, className, showLabel = true, size = 'md', customCat
     const matchedCategory = customCategories.find(cat => cat.type === customCategory);
     if (matchedCategory?.icon) {
       switch (matchedCategory.icon) {
+        // Standard category icons
         case 'Book': Icon = Book; break;
         case 'Film': Icon = Film; break;
         case 'Tv': Icon = Tv; break;
         case 'Utensils': Icon = Utensils; break;
         case 'Store': Icon = Store; break;
         case 'Headphones': Icon = Headphones; break;
+        
+        // New category icons
+        case 'PlaneTakeoff': Icon = PlaneTakeoff; break;
+        case 'MapPin': Icon = MapPin; break;
+        case 'Music': Icon = Music; break;
+        case 'Building': Icon = Building; break;
+        case 'Gift': Icon = Gift; break;
+        case 'Newspaper': Icon = Newspaper; break;
+        case 'Binoculars': Icon = Binoculars; break;
+        
         default: Icon = HelpCircle;
       }
       label = matchedCategory.label;

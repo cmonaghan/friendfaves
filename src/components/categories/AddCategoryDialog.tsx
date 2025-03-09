@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -12,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { addCustomCategory } from "@/utils/storage";
 import { queryKeys } from "@/hooks/useRecommendationQueries";
-import { Book, Film, Tv, Utensils, Store, Headphones, HelpCircle } from 'lucide-react';
-import { LucideIcon } from 'lucide-react';
+import { 
+  Book, Film, Tv, Utensils, Store, Headphones, HelpCircle,
+  PlaneTakeoff, MapPin, Music, Building, Gift, Newspaper, Binoculars 
+} from 'lucide-react';
 
 const colorOptions = [
   { value: "bg-blue-50", label: "Blue" },
@@ -28,12 +29,19 @@ const colorOptions = [
 ];
 
 const iconOptions = [
+  { value: "PlaneTakeoff", label: "Travel", icon: PlaneTakeoff },
+  { value: "MapPin", label: "Location", icon: MapPin },
+  { value: "Music", label: "Music", icon: Music },
+  { value: "Building", label: "Building", icon: Building },
+  { value: "Gift", label: "Gift", icon: Gift },
+  { value: "Newspaper", label: "News", icon: Newspaper },
+  { value: "Binoculars", label: "Discover", icon: Binoculars },
   { value: "Book", label: "Book", icon: Book },
   { value: "Film", label: "Film", icon: Film },
   { value: "Tv", label: "TV", icon: Tv },
-  { value: "Utensils", label: "Utensils", icon: Utensils },
+  { value: "Utensils", label: "Food", icon: Utensils },
   { value: "Store", label: "Store", icon: Store },
-  { value: "Headphones", label: "Headphones", icon: Headphones },
+  { value: "Headphones", label: "Audio", icon: Headphones },
   { value: "HelpCircle", label: "Other", icon: HelpCircle }
 ];
 
@@ -68,10 +76,8 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
     setIsSubmitting(true);
     
     try {
-      // Format the type (lowercase, hyphenated version of the label)
       const type = values.label.toLowerCase().replace(/\s+/g, '-');
       
-      // Create the new category
       const newCategory = {
         type,
         label: values.label,
@@ -88,15 +94,12 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
           toast.success("Category added for this session");
         }
         
-        // Invalidate the custom categories query to refetch the updated data
         queryClient.invalidateQueries({
           queryKey: queryKeys.customCategories
         });
         
-        // Close the dialog
         onOpenChange(false);
         
-        // Reset the form
         form.reset();
       } else {
         toast.error("Failed to add category");
@@ -109,7 +112,6 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
     }
   };
 
-  // Selected color and icon previews
   const selectedColor = form.watch("color") || "bg-gray-50";
   const selectedIcon = form.watch("icon") || "HelpCircle";
   const SelectedIconComponent = iconOptions.find(icon => icon.value === selectedIcon)?.icon || HelpCircle;
