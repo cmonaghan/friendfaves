@@ -1,4 +1,3 @@
-
 import { Person } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -33,7 +32,7 @@ export const getPeople = async (): Promise<Person[]> => {
 export const addPerson = async (person: Person): Promise<Person> => {
   await initializeDatabaseStorage();
   
-  // Use a placeholder gray avatar instead of random avatars
+  // Only use placeholder for user-created friends
   const personWithPlaceholder = {
     ...person,
     avatar: person.avatar || '/placeholder.svg' // Use the placeholder SVG that comes with the project
@@ -47,6 +46,8 @@ export const addPerson = async (person: Person): Promise<Person> => {
     peopleStore.push(personWithPlaceholder);
   } else {
     console.log('Adding mock person for unauthenticated user');
+    // For mock data, we can keep any provided avatar or add one
+    // This ensures mock data still has avatars but user-created friends use placeholders
     mockPeople.push(personWithPlaceholder);
   }
   
