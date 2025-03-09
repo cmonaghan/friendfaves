@@ -17,6 +17,7 @@ interface AddCategoryDialogProps {
 
 export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: AddCategoryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdCategory, setCreatedCategory] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { data: customCategories = [] } = useCustomCategories();
@@ -46,9 +47,13 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
           toast.success("Category added for this session");
         }
         
+        // Update the query cache with the new category
         queryClient.invalidateQueries({
           queryKey: queryKeys.customCategories
         });
+        
+        // Store the created category type so we can ensure it's used properly
+        setCreatedCategory(type);
         
         // Call the onCategoryCreated callback immediately before closing the dialog
         if (onCategoryCreated) {
@@ -89,8 +94,24 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
     onOpenChange(false);
   };
 
+  // Reset the state when the dialog opens
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen && createdCategory && onCategoryCreated) {
+      // Ensure the callback is called again as a safety measure
+      console.log("Ensuring category is set on dialog close:", createdCategory);
+      onCategoryCreated(createdCategory);
+    }
+    
+    // Reset the created category when dialog closes
+    if (!isOpen) {
+      setCreatedCategory(null);
+    }
+    
+    onOpenChange(isOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add New Category</DialogTitle>

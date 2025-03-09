@@ -33,12 +33,15 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
     onTypeChange(value);
   };
 
+  // Function to handle when a new category is created
   const handleCategoryCreated = (categoryType: string) => {
     console.log("Category created, setting form value to:", categoryType);
     
     // When a new category is created, update the form field with shouldValidate: false
     form.setValue("type", categoryType, {
-      shouldValidate: false // Prevent validation from being triggered
+      shouldValidate: false, // Prevent validation from being triggered
+      shouldDirty: true,     // Mark field as dirty
+      shouldTouch: true      // Mark field as touched
     });
     
     // Call parent onTypeChange to update any dependent state
@@ -113,7 +116,9 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
           // If dialog is closed without a category being created, reset to default
           if (!open && form.getValues("type") === RecommendationType.OTHER) {
             form.setValue("type", RecommendationType.BOOK, {
-              shouldValidate: false
+              shouldValidate: false,
+              shouldDirty: true,
+              shouldTouch: true
             });
             onTypeChange(RecommendationType.BOOK);
           }
