@@ -31,6 +31,7 @@ const Index = () => {
         ]);
         
         setRecommendations(recommendationsData);
+        console.log("Fetched recommendations:", recommendationsData.length); // Debug log
         
         if (user && categoriesData.length > 0) {
           setCustomCategories(categoriesData);
@@ -92,21 +93,35 @@ const Index = () => {
     }))
   ];
   
-  // Updated filtering logic to ensure test data shows for non-logged in users
-  const filteredRecommendations = recommendations
-    .filter(rec => {
-      if (activeTab === RecommendationType.OTHER) {
-        return rec.type === RecommendationType.OTHER;
-      }
-      
+  // Get filtered recommendations based on active tab
+  const getFilteredRecommendations = () => {
+    if (!recommendations || recommendations.length === 0) {
+      console.log("No recommendations available to filter"); // Debug log
+      return [];
+    }
+    
+    console.log(`Filtering recommendations for tab: ${activeTab}, total recommendations: ${recommendations.length}`); // Debug log
+    
+    let filtered = [];
+    
+    if (activeTab === RecommendationType.OTHER) {
+      filtered = recommendations.filter(rec => rec.type === RecommendationType.OTHER);
+    } else {
       const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
       if (isCustomCategory) {
-        return rec.type === RecommendationType.OTHER && rec.customCategory === activeTab;
+        filtered = recommendations.filter(
+          rec => rec.type === RecommendationType.OTHER && rec.customCategory === activeTab
+        );
+      } else {
+        filtered = recommendations.filter(rec => rec.type === activeTab);
       }
-      
-      return rec.type === activeTab;
-    })
-    .slice(0, 3);
+    }
+    
+    console.log(`Found ${filtered.length} recommendations for tab ${activeTab}`); // Debug log
+    return filtered.slice(0, 3);
+  };
+  
+  const filteredRecommendations = getFilteredRecommendations();
   
   if (loading) {
     return (
