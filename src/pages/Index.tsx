@@ -10,7 +10,8 @@ import { useAuth } from '@/contexts/AuthProvider';
 import { getRecommendations } from '@/utils/storage';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState<RecommendationType>(RecommendationType.BOOK);
+  // Changed the type to allow for custom category strings
+  const [activeTab, setActiveTab] = useState<RecommendationType | string>(RecommendationType.BOOK);
   const categoryRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const [recommendations, setRecommendations] = useState([]);

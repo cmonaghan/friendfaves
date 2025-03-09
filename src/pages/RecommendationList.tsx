@@ -27,9 +27,10 @@ import {
 
 const RecommendationList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const typeParam = searchParams.get('type') as RecommendationType | null;
+  const typeParam = searchParams.get('type') as RecommendationType | string | null;
   const { user } = useAuth();
   
+  // Updated to use the expanded type
   const [activeTab, setActiveTab] = useState<string>(typeParam || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
