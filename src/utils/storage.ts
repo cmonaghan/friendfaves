@@ -1,6 +1,7 @@
+
 import { Person, Recommendation, RecommendationType, CustomCategory } from './types';
 import * as localStorage from './localStorage';
-import * as databaseStorage from './databaseStorage';
+import * as databaseStorage from './database';
 import { isDemo, StorageProvider, currentStorageProvider } from './storageConfig';
 
 // Initialize storage based on current provider
