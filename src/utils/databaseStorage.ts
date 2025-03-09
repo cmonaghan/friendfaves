@@ -61,8 +61,7 @@ const getRecommendations = async (): Promise<Recommendation[]> => {
   
   if (session) {
     console.log('Fetching user-specific recommendations from database');
-    // In a real implementation, this would query the database for user-specific data
-    // For this example, we're using the in-memory store which would be empty for authenticated users
+    // When authenticated, only show user-specific data, not mock data
     return [...recommendationsStore];
   } else if (SHOW_TEST_DATA_FOR_VISITORS) {
     console.log('Fetching mock recommendations and visitor recommendations for unauthenticated visitor');
@@ -147,6 +146,7 @@ const getPeople = async (): Promise<Person[]> => {
   
   if (session) {
     console.log('Fetching user-specific people from database');
+    // When authenticated, only return user-specific people, not mock people
     return [...peopleStore];
   } else {
     console.log('Fetching mock people for unauthenticated user');
