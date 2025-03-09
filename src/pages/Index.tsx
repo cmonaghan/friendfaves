@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
@@ -53,7 +52,6 @@ const Index = () => {
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
-        // Add a slight delay to ensure the loading animation is visible
         setTimeout(() => {
           setLoading(false);
         }, 500);
@@ -175,8 +173,8 @@ const Index = () => {
 
   return (
     <div className="max-w-screen-xl mx-auto">
-      {/* Add Recommendation button at the top */}
-      <div className="mb-8 flex justify-end">
+      {/* Add Recommendation button at the top - now left aligned */}
+      <div className="mb-8 flex justify-start">
         <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90">
           <Link to="/add" className="flex items-center gap-1.5">
             <Plus size={18} />
