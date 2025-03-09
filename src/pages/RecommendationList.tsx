@@ -1,30 +1,16 @@
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import RecommendationCard from '@/components/RecommendationCard';
 import { RecommendationType, CustomCategory } from '@/utils/types';
-import { useStaggeredAnimation } from '@/utils/animations';
-import { Search, Filter, Check, SortAsc, SortDesc, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthProvider';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import RecommendationFilters from '@/components/recommendations/RecommendationFilters';
+import RecommendationTabs from '@/components/recommendations/RecommendationTabs';
+import RecommendationGrid from '@/components/recommendations/RecommendationGrid';
 import { useRecommendations, useCustomCategories } from '@/hooks/useRecommendationQueries';
+import { useFilteredRecommendations } from '@/hooks/useFilteredRecommendations';
 
 const RecommendationList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -84,44 +70,14 @@ const RecommendationList = () => {
     setSearchParams(searchParams);
   }, [activeTab, searchParams, setSearchParams]);
   
-  const filteredRecommendations = recommendations
-    .filter(rec => {
-      if (activeTab === 'all') {
-        return true;
-      }
-      
-      if (activeTab === RecommendationType.OTHER) {
-        return rec.type === RecommendationType.OTHER && !rec.customCategory;
-      }
-      
-      const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
-      if (isCustomCategory) {
-        return rec.type === RecommendationType.OTHER && 
-               (typeof rec.customCategory === 'string' && rec.customCategory === activeTab) ||
-               (typeof rec.customCategory === 'object' && (rec.customCategory as CustomCategory).type === activeTab);
-      }
-      
-      return rec.type === activeTab;
-    })
-    .filter(rec => {
-      if (searchQuery && !rec.title.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-      
-      if (!showCompleted && rec.isCompleted) {
-        return false;
-      }
-      
-      return true;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
-    });
-  
-  const cardsRef = useRef<HTMLDivElement>(null);
-  useStaggeredAnimation(cardsRef, 75, 100);
+  const filteredRecommendations = useFilteredRecommendations(
+    recommendations, 
+    activeTab, 
+    searchQuery, 
+    showCompleted, 
+    sortOrder, 
+    customCategories
+  );
   
   if (loading) {
     return (
@@ -158,127 +114,27 @@ const RecommendationList = () => {
         )}
       </div>
       
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-          <Input
-            placeholder="Search recommendations"
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Filter size={16} />
-                Filters
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Show/Hide</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowCompleted(!showCompleted)}>
-                <div className="flex items-center gap-2">
-                  {showCompleted && <Check size={16} />}
-                  <span className={!showCompleted ? 'ml-5' : ''}>
-                    Completed Items
-                  </span>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                {sortOrder === 'desc' ? <SortDesc size={16} /> : <SortAsc size={16} />}
-                Sort
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Sort Order</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => setSortOrder('desc')}>
-                  <div className="flex items-center gap-2">
-                    {sortOrder === 'desc' && <Check size={16} />}
-                    <span className={sortOrder !== 'desc' ? 'ml-5' : ''}>
-                      Newest First
-                    </span>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOrder('asc')}>
-                  <div className="flex items-center gap-2">
-                    {sortOrder === 'asc' && <Check size={16} />}
-                    <span className={sortOrder !== 'asc' ? 'ml-5' : ''}>
-                      Oldest First
-                    </span>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+      <RecommendationFilters
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        showCompleted={showCompleted}
+        setShowCompleted={setShowCompleted}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+      />
       
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="overflow-x-auto bg-secondary" style={{ borderRadius: 'var(--radius)' }}>
-          <TabsList className="w-max px-1 py-1 bg-secondary mx-auto">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value={RecommendationType.BOOK}>Books</TabsTrigger>
-            <TabsTrigger value={RecommendationType.MOVIE}>Movies</TabsTrigger>
-            <TabsTrigger value={RecommendationType.TV}>TV Shows</TabsTrigger>
-            <TabsTrigger value={RecommendationType.RECIPE}>Recipes</TabsTrigger>
-            <TabsTrigger value={RecommendationType.RESTAURANT}>Restaurants</TabsTrigger>
-            <TabsTrigger value={RecommendationType.PODCAST}>Podcasts</TabsTrigger>
-            
-            {/* Only show "Other" category if there are recommendations that don't have a customCategory */}
-            {recommendations.some(rec => rec.type === RecommendationType.OTHER && !rec.customCategory) && (
-              <TabsTrigger value={RecommendationType.OTHER}>Other</TabsTrigger>
-            )}
-            
-            {/* List all custom categories as their own tabs */}
-            {customCategories.length > 0 && customCategories.map(category => (
-              <TabsTrigger 
-                key={category.type} 
-                value={category.type}
-              >
-                {category.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-        
-        <TabsContent value={activeTab} className="mt-6">
-          {filteredRecommendations.length > 0 ? (
-            <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredRecommendations.map(recommendation => (
-                <RecommendationCard key={recommendation.id} recommendation={recommendation} />
-              ))}
-            </div>
-          ) : (
-            <div className="py-16 text-center">
-              <h3 className="text-xl font-medium mb-2">No recommendations found</h3>
-              <p className="text-muted-foreground mb-6">
-                {searchQuery ? 'Try changing your search query or filters' : 'Add your first recommendation to get started'}
-              </p>
-              {user && (
-                <Button asChild>
-                  <a href="/add">Add Recommendation</a>
-                </Button>
-              )}
-              {!user && (
-                <Button asChild>
-                  <a href="/auth">Sign in to add recommendations</a>
-                </Button>
-              )}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+      <RecommendationTabs
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        customCategories={customCategories}
+        recommendations={recommendations}
+      >
+        <RecommendationGrid
+          recommendations={recommendations}
+          filteredRecommendations={filteredRecommendations}
+          searchQuery={searchQuery}
+        />
+      </RecommendationTabs>
     </div>
   );
 };
