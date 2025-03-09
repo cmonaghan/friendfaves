@@ -67,7 +67,6 @@ export type Database = {
           date: string
           id: string
           is_completed: boolean
-          notes: string | null
           reason: string | null
           recommender_id: string
           source: string | null
@@ -81,7 +80,6 @@ export type Database = {
           date: string
           id?: string
           is_completed?: boolean
-          notes?: string | null
           reason?: string | null
           recommender_id: string
           source?: string | null
@@ -95,7 +93,6 @@ export type Database = {
           date?: string
           id?: string
           is_completed?: boolean
-          notes?: string | null
           reason?: string | null
           recommender_id?: string
           source?: string | null

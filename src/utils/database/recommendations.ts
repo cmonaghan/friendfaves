@@ -1,4 +1,3 @@
-
 import { Recommendation, RecommendationType } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -63,7 +62,6 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
         type: rec.type as RecommendationType,
         recommender: recommender || fallbackRecommender,
         reason: rec.reason || undefined,
-        notes: rec.notes || undefined,
         source: rec.source || undefined,
         date: rec.date,
         isCompleted: rec.is_completed,
@@ -135,7 +133,6 @@ export const getRecommendationById = async (id: string): Promise<Recommendation 
       type: data.type as RecommendationType,
       recommender: recommender || fallbackRecommender,
       reason: data.reason || undefined,
-      notes: data.notes || undefined,
       source: data.source || undefined,
       date: data.date,
       isCompleted: data.is_completed,
@@ -187,7 +184,6 @@ export const addRecommendation = async (recommendation: Recommendation): Promise
         type: recommendation.type,
         recommender_id: recommendation.recommender.id,
         reason: recommendation.reason,
-        notes: recommendation.notes,
         source: recommendation.source,
         date: recommendation.date,
         is_completed: recommendation.isCompleted,
@@ -233,7 +229,6 @@ export const updateRecommendation = async (updatedRec: Recommendation): Promise<
         type: updatedRec.type,
         recommender_id: updatedRec.recommender.id,
         reason: updatedRec.reason,
-        notes: updatedRec.notes,
         source: updatedRec.source,
         is_completed: updatedRec.isCompleted,
         custom_category: updatedRec.customCategory

@@ -54,7 +54,6 @@ const RecommendationDetail = () => {
   const [editType, setEditType] = useState<RecommendationType>(RecommendationType.BOOK);
   const [editRecommenderId, setEditRecommenderId] = useState('');
   const [editReason, setEditReason] = useState('');
-  const [editNotes, setEditNotes] = useState('');
   const [editSource, setEditSource] = useState('');
   
   useEffect(() => {
@@ -74,7 +73,6 @@ const RecommendationDetail = () => {
         setEditType(data.type);
         setEditRecommenderId(data.recommender.id);
         setEditReason(data.reason || '');
-        setEditNotes(data.notes || '');
         setEditSource(data.source || '');
         
         // Fetch people for recommender dropdown
@@ -145,7 +143,6 @@ const RecommendationDetail = () => {
       setEditType(recommendation.type);
       setEditRecommenderId(recommendation.recommender.id);
       setEditReason(recommendation.reason || '');
-      setEditNotes(recommendation.notes || '');
       setEditSource(recommendation.source || '');
     }
   };
@@ -169,7 +166,6 @@ const RecommendationDetail = () => {
         type: editType,
         recommender: selectedRecommender,
         reason: editReason || undefined,
-        notes: editNotes || undefined,
         source: editSource || undefined,
       };
       
@@ -382,45 +378,24 @@ const RecommendationDetail = () => {
         
         {/* Content */}
         <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-3 space-y-6">
+          <div className="md:col-span-3">
             {isEditing ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Why They Recommended It</label>
-                  <Textarea
-                    value={editReason}
-                    onChange={(e) => setEditReason(e.target.value)}
-                    placeholder="Enter their reason for recommending it"
-                    className="min-h-24"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Additional Notes</label>
-                  <Textarea
-                    value={editNotes}
-                    onChange={(e) => setEditNotes(e.target.value)}
-                    placeholder="Any additional notes about this recommendation"
-                    className="min-h-20"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Why They Recommended It</label>
+                <Textarea
+                  value={editReason}
+                  onChange={(e) => setEditReason(e.target.value)}
+                  placeholder="Enter their reason for recommending it"
+                  className="min-h-24"
+                />
               </div>
             ) : (
-              <>
-                <div>
-                  <h2 className="text-lg font-semibold mb-3">Why They Recommended It</h2>
-                  <div className="bg-secondary/50 p-4 rounded-lg">
-                    <p className="italic text-muted-foreground">"{recommendation.reason}"</p>
-                  </div>
+              <div>
+                <h2 className="text-lg font-semibold mb-3">Why They Recommended It</h2>
+                <div className="bg-secondary/50 p-4 rounded-lg">
+                  <p className="italic text-muted-foreground">{recommendation.reason ? `"${recommendation.reason}"` : "No reason provided"}</p>
                 </div>
-                
-                {recommendation.notes && (
-                  <div>
-                    <h2 className="text-lg font-semibold mb-3">Additional Notes</h2>
-                    <p className="text-muted-foreground">{recommendation.notes}</p>
-                  </div>
-                )}
-              </>
+              </div>
             )}
           </div>
           

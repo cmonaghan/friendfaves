@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -37,7 +38,6 @@ const formSchema = z.object({
   recommenderId: z.string().min(1, { message: "Please select who recommended this" }),
   newFriendName: z.string().optional(),
   reason: z.string().optional(),
-  notes: z.string().optional(),
   source: z.string().optional(),
   customCategory: z.string().optional(),
 });
@@ -75,7 +75,6 @@ const AddRecommendationForm = () => {
       recommenderId: "",
       newFriendName: "",
       reason: "",
-      notes: "",
       source: "",
       customCategory: "",
     },
@@ -120,7 +119,6 @@ const AddRecommendationForm = () => {
         type: data.type,
         recommender: recommender,
         reason: data.reason || undefined,
-        notes: data.notes || undefined,
         source: data.source || undefined,
         date: new Date().toISOString().split('T')[0],
         isCompleted: false,
@@ -306,24 +304,6 @@ const AddRecommendationForm = () => {
                   <FormLabel>Where to find it (optional)</FormLabel>
                   <FormControl>
                     <Input placeholder="E.g. Netflix, Amazon, Local bookstore" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Additional notes (optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Any additional notes about this recommendation"
-                      className="min-h-20"
-                      {...field}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

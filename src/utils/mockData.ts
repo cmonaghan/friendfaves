@@ -31,7 +31,6 @@ export const mockRecommendations: Recommendation[] = [
     type: RecommendationType.BOOK,
     recommender: mockPeople[0],
     reason: 'Incredible sci-fi with actual science. The character development is amazing and there are some great twists.',
-    notes: 'Available on Kindle Unlimited',
     date: '2023-05-15',
     isCompleted: false
   },
@@ -51,7 +50,6 @@ export const mockRecommendations: Recommendation[] = [
     type: RecommendationType.TV,
     recommender: mockPeople[2],
     reason: 'Best drama on television. The writing and acting are phenomenal.',
-    notes: 'They said to give it at least 3 episodes',
     source: 'HBO Max',
     date: '2023-07-10',
     isCompleted: false
@@ -82,7 +80,6 @@ export const mockRecommendations: Recommendation[] = [
     type: RecommendationType.RESTAURANT,
     recommender: mockPeople[1],
     reason: 'Amazing sushi and Japanese fusion cuisine. The black cod with miso is their signature dish and it\'s incredible.',
-    notes: 'Make reservations at least a month in advance',
     source: 'Downtown location',
     date: '2023-09-18',
     isCompleted: false
@@ -103,7 +100,6 @@ export const mockRecommendations: Recommendation[] = [
     type: RecommendationType.RESTAURANT,
     recommender: mockPeople[3],
     reason: 'Incredible seasonal menu that changes based on local ingredients. The atmosphere is cozy and service is excellent.',
-    notes: 'Ask for a table by the window',
     source: 'West side location',
     date: '2023-11-12',
     isCompleted: false
@@ -114,7 +110,6 @@ export const mockRecommendations: Recommendation[] = [
     type: RecommendationType.PODCAST,
     recommender: mockPeople[0],
     reason: 'Hilarious conversations with surprise celebrity guests. The hosts have great chemistry.',
-    notes: 'Episodes are about an hour long',
     source: 'Any podcast app',
     date: '2023-12-03',
     isCompleted: false

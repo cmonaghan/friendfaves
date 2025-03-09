@@ -26,7 +26,6 @@ export interface Recommendation {
   type: RecommendationType;
   recommender: Person;
   reason?: string;
-  notes?: string;
   source?: string;
   date: string;
   isCompleted: boolean;
