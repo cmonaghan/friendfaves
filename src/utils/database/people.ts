@@ -1,3 +1,4 @@
+
 import { Person } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -18,7 +19,31 @@ export const getPeople = async (): Promise<Person[]> => {
   
   if (userAuthenticated) {
     console.log('Fetching user-specific people from database');
-    // When authenticated, only return user-specific people, not mock people
+    
+    // Fetch people from the database
+    const session = await getCurrentSession();
+    
+    if (session) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .not('id', 'eq', session.user.id);
+      
+      if (error) {
+        console.error('Error fetching people:', error);
+        return [...peopleStore];
+      }
+      
+      // Map database results to our Person type and combine with local store
+      const dbPeople = data.map(profile => ({
+        id: profile.id,
+        name: profile.name || `Friend ${profile.id.substring(0, 4)}`,
+        avatar: profile.avatar_url || '/placeholder.svg'
+      }));
+      
+      return [...dbPeople, ...peopleStore];
+    }
+    
     return [...peopleStore];
   } else {
     console.log('Fetching mock people for unauthenticated user');
@@ -43,6 +68,23 @@ export const addPerson = async (person: Person): Promise<Person> => {
   
   if (userAuthenticated) {
     console.log('Adding user-specific person to database');
+    
+    // Add to Supabase database
+    const { error } = await supabase
+      .from('profiles')
+      .insert({
+        id: personWithPlaceholder.id,
+        name: personWithPlaceholder.name,
+        avatar_url: personWithPlaceholder.avatar
+      });
+    
+    if (error) {
+      console.error('Error adding person to database:', error);
+      // Still add to local store even if database insert fails
+      peopleStore.push(personWithPlaceholder);
+    }
+    
+    // We'll still add to the peopleStore to ensure it shows up immediately
     peopleStore.push(personWithPlaceholder);
   } else {
     console.log('Adding mock person for unauthenticated user');
