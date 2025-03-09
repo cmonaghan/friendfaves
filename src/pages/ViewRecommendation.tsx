@@ -2,8 +2,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Pencil, Trash2, CheckSquare, Square } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Pencil, Trash2 } from 'lucide-react';
 import { 
   Dialog,
   DialogContent,
@@ -23,6 +22,7 @@ import { useRecommendationById } from '@/hooks/useRecommendationQueries';
 // Import the queryKeys for cache invalidation
 import { queryKeys } from '@/hooks/useRecommendationQueries';
 import { CustomCategory } from '@/utils/types';
+import CategoryTag from '@/components/CategoryTag';
 
 const ViewRecommendation = () => {
   const { id } = useParams<{ id: string }>();
@@ -129,136 +129,115 @@ const ViewRecommendation = () => {
     );
   }
   
+  // Format date
+  const formattedDate = new Date(recommendation.date).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  
   return (
     <div className="max-w-4xl mx-auto pb-12 pt-4">
-      <div className="flex items-center gap-2 mb-8">
-        <Button variant="ghost" size="icon" asChild className="mr-2">
+      <div className="flex items-center gap-4 mb-6">
+        <Button variant="ghost" size="icon" asChild>
           <Link to="/recommendations">
             <ArrowLeft size={20} />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold">{recommendation.title}</h1>
+        <h1 className="font-bold text-xl">Back</h1>
       </div>
       
-      <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
+      <div className="flex gap-3 mb-6">
+        <Button 
+          variant={recommendation.isCompleted ? "outline" : "default"} 
+          className="gap-2"
+          onClick={handleToggleComplete}
+        >
+          <CheckCircle2 size={18} />
+          {recommendation.isCompleted ? "Mark Incomplete" : "Mark Complete"}
+        </Button>
+        
+        <Button variant="outline" className="gap-2" asChild>
+          <Link to={`/recommendation/${recommendation.id}/edit`}>
+            <Pencil size={18} />
+            Edit
+          </Link>
+        </Button>
+        
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="destructive" className="gap-2">
+              <Trash2 size={18} />
+              Delete
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Recommendation</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete "{recommendation.title}"? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                {isDeleting ? <LoadingSpinner size={16} /> : "Delete"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+      
+      <div className="bg-white dark:bg-card border rounded-lg shadow-sm overflow-hidden">
+        <div className="p-6 border-b">
+          <div className="mb-3">
+            <CategoryTag type={recommendation.type} customCategory={recommendation.customCategory} />
+          </div>
+          
+          <h1 className="text-3xl font-bold mb-2">{recommendation.title}</h1>
+          
+          <div className="text-sm text-muted-foreground">
+            {formattedDate}
+          </div>
+        </div>
+        
+        {recommendation.reason && (
+          <div className="p-6 border-b">
+            <h2 className="text-xl font-semibold mb-4">Why They Recommended It</h2>
+            <div className="bg-muted p-4 rounded-md">
+              <p>{recommendation.reason}</p>
+            </div>
+          </div>
+        )}
+        
+        {recommendation.source && (
+          <div className="p-6 border-b">
+            <h2 className="text-xl font-semibold mb-4">Where to Find It</h2>
+            <div className="bg-muted p-4 rounded-md">
+              <p>{recommendation.source}</p>
+            </div>
+          </div>
+        )}
+        
         <div className="p-6">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden">
-                <img 
-                  src={recommendation.recommender.avatar || '/placeholder.svg'} 
-                  alt={recommendation.recommender.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <p className="font-medium">
-                  Recommended by {recommendation.recommender.name}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(recommendation.date).toLocaleDateString()}
-                </p>
-              </div>
+          <h2 className="text-xl font-semibold mb-4">Recommended By</h2>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full overflow-hidden">
+              <img 
+                src={recommendation.recommender.avatar || '/placeholder.svg'} 
+                alt={recommendation.recommender.name}
+                className="w-full h-full object-cover"
+              />
             </div>
-            
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleToggleComplete}
-                title={recommendation.isCompleted ? "Mark as not completed" : "Mark as completed"}
-              >
-                {recommendation.isCompleted ? <CheckSquare size={20} /> : <Square size={20} />}
-              </Button>
-              
-              <Button variant="outline" size="icon" asChild>
-                <Link to={`/recommendation/${recommendation.id}/edit`}>
-                  <Pencil size={20} />
-                </Link>
-              </Button>
-              
-              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Trash2 size={20} />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Delete Recommendation</DialogTitle>
-                    <DialogDescription>
-                      Are you sure you want to delete "{recommendation.title}"? This action cannot be undone.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                      {isDeleting ? <LoadingSpinner size={16} /> : "Delete"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+            <div>
+              <p className="font-medium">{recommendation.recommender.name}</p>
+              {recommendation.recommender.relation && (
+                <p className="text-sm text-muted-foreground">{recommendation.recommender.relation}</p>
+              )}
             </div>
           </div>
-          
-          <div className="mb-6 flex items-center">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-              {recommendation.type}
-              {recommendation.customCategory !== null && recommendation.customCategory !== undefined && (
-                typeof recommendation.customCategory === 'object' 
-                  ? ` › ${(recommendation.customCategory as CustomCategory).label}` 
-                  : ` › ${recommendation.customCategory}`
-              )}
-            </span>
-            {recommendation.isCompleted && (
-              <span className="ml-3 inline-flex items-center text-sm font-medium text-green-600 dark:text-green-500">
-                <CheckSquare size={16} className="mr-1" />
-                Completed
-              </span>
-            )}
-          </div>
-          
-          <Tabs defaultValue="details" className="w-full">
-            <TabsList className="mb-6">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="notes">Notes</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="details" className="space-y-6">
-              {recommendation.reason && (
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Why it was recommended</h3>
-                  <div className="bg-muted p-4 rounded-md">
-                    <p>{recommendation.reason}</p>
-                  </div>
-                </div>
-              )}
-              
-              {recommendation.source && (
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Where to find it</h3>
-                  <div className="bg-muted p-4 rounded-md">
-                    <p>{recommendation.source}</p>
-                  </div>
-                </div>
-              )}
-              
-              {!recommendation.reason && !recommendation.source && (
-                <div className="py-8 text-center">
-                  <p className="text-muted-foreground">No additional details available.</p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="notes" className="space-y-6">
-              <div className="py-8 text-center">
-                <p className="text-muted-foreground mb-4">No notes added yet.</p>
-                <Button variant="outline" disabled>Add Note (Coming Soon)</Button>
-              </div>
-            </TabsContent>
-          </Tabs>
         </div>
       </div>
     </div>

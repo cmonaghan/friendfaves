@@ -3,7 +3,7 @@ import { Recommendation } from "@/utils/types";
 import { Link } from "react-router-dom";
 import CategoryTag from "./CategoryTag";
 import Avatar from "./Avatar";
-import { CheckCircle2, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
 
@@ -34,36 +34,54 @@ const RecommendationCard = forwardRef<HTMLDivElement, RecommendationCardProps>(
       >
         <Link to={`/recommendation/${id}`} className="block absolute inset-0 z-10" aria-label={title}></Link>
         
-        <div className="p-4 sm:p-5">
-          <div className="flex justify-between items-start mb-3">
-            <CategoryTag type={type} size="sm" customCategory={customCategory} />
+        <div className="divide-y">
+          <div className="p-4 sm:p-5">
+            <div className="mb-3">
+              <CategoryTag type={type} size="sm" customCategory={customCategory} />
+            </div>
             
-            {isCompleted && (
-              <span className="text-green-500 flex items-center gap-1 text-sm">
-                <CheckCircle2 size={16} />
-                Completed
-              </span>
-            )}
-          </div>
-          
-          <h3 className="text-lg font-semibold line-clamp-1 group-hover:text-primary transition-colors mb-2">
-            {title}
-          </h3>
-          
-          {reason && (
-            <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
-              {reason}
-            </p>
-          )}
-          
-          <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
-            <Avatar person={recommender} size="sm" showName={true} />
+            <h3 className="text-2xl font-bold line-clamp-1 group-hover:text-primary transition-colors mb-2">
+              {title}
+            </h3>
             
-            <div className="flex items-center text-xs text-muted-foreground">
+            <div className="flex items-center text-sm text-muted-foreground">
               <Calendar size={14} className="mr-1" />
               <span>{formattedDate}</span>
             </div>
           </div>
+          
+          {reason && (
+            <div className="p-4 sm:p-5">
+              <h4 className="font-medium mb-2">Why They Recommended It</h4>
+              <blockquote className="bg-muted p-3 rounded-md italic text-sm">
+                "{reason}"
+              </blockquote>
+              
+              <div className="mt-4">
+                <div className="flex justify-end">
+                  <div className="flex items-center gap-2">
+                    <div className="text-right">
+                      <div className="text-sm">Recommended By</div>
+                    </div>
+                    <Avatar person={recommender} size="sm" showName={true} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {!reason && (
+            <div className="p-4 sm:p-5">
+              <div className="flex justify-end">
+                <div className="flex items-center gap-2">
+                  <div className="text-right">
+                    <div className="text-sm">Recommended By</div>
+                  </div>
+                  <Avatar person={recommender} size="sm" showName={true} />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
