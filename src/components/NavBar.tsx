@@ -49,7 +49,7 @@ const NavBar = () => {
               <span className="bg-primary text-primary-foreground p-1 rounded">
                 <Book size={16} />
               </span>
-              <span>Recommends</span>
+              <span>RecTrackr</span>
             </Link>
           </div>
           

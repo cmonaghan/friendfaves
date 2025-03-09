@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,7 +78,7 @@ const Auth = () => {
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle>AskewList</CardTitle>
+          <CardTitle>RecTrackr</CardTitle>
           <CardDescription>Manage your recommendations</CardDescription>
         </CardHeader>
         <CardContent>
