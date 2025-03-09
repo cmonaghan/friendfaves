@@ -117,20 +117,17 @@ const Index = () => {
   
   const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
   
+  // Never show fallback recommendations for custom categories
   // Only show fallback recommendations for standard categories when they have no specific recommendations
-  // Never show fallback recommendations for custom categories or "Other" category
   if (filteredRecommendations.length === 0 && 
       !isCustomCategory && 
-      activeTab !== RecommendationType.OTHER &&
-      defaultCategories.some(cat => cat.type === activeTab)) {
+      activeTab !== RecommendationType.OTHER) {
     console.log("No recommendations for this standard category, showing fallback recommendations");
     filteredRecommendations = recommendations.slice(0, 3);
   }
   
-  if (recommendations.length > 0 && filteredRecommendations.length === 0) {
-    console.log("Using fallback recommendations");
-    filteredRecommendations = recommendations.slice(0, 3);
-  }
+  // This fallback was causing confusion - remove it for custom categories
+  // Now if there are no recommendations for a custom category, we'll show an empty state
   
   useEffect(() => {
     if (!user) {

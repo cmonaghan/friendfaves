@@ -42,6 +42,9 @@ const RecommendationsSection = ({
     cat.type !== 'add-category'
   );
   
+  const activeCategory = categories.find(cat => cat.type === activeTab);
+  const categoryLabel = activeCategory ? activeCategory.label : 'Items';
+  
   return (
     <section ref={resultsSectionRef} className="mb-12">
       <div className="flex justify-between items-end mb-6">
@@ -87,11 +90,11 @@ const RecommendationsSection = ({
         ) : (
           <div className="col-span-full py-12 text-center">
             <p className="text-muted-foreground">
-              {user ? 'No recommendations yet. Add your first one!' : 'No recommendations found for this category.'}
+              {user ? `No ${categoryLabel} recommendations yet. Add your first one!` : `No recommendations found for ${categoryLabel}.`}
             </p>
             {user && (
               <Button asChild variant="outline" className="mt-4">
-                <Link to="/add">Add your first {activeTab} recommendation</Link>
+                <Link to="/add">Add your first {categoryLabel} recommendation</Link>
               </Button>
             )}
           </div>
