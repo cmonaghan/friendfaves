@@ -5,7 +5,8 @@ export const isDemo = false; // Set to false to use database storage
 // Storage provider types
 export enum StorageProvider {
   LOCAL_STORAGE = 'localStorage',
-  DATABASE = 'database'
+  DATABASE = 'database',
+  IN_MEMORY = 'in-memory'  // New storage type for non-authenticated users
 }
 
 // Database configuration
@@ -27,3 +28,6 @@ export const getIsAuthenticated = () => {
 
 // Show test data for visitors
 export const SHOW_TEST_DATA_FOR_VISITORS = true;
+
+// Allow non-authenticated users to add recommendations (stored only in memory/session)
+export const ALLOW_VISITOR_RECOMMENDATIONS = true;

@@ -50,13 +50,7 @@ const App = () => {
               />
               <Route 
                 path="/add" 
-                element={
-                  <Layout>
-                    <RequireAuth>
-                      <AddRecommendation />
-                    </RequireAuth>
-                  </Layout>
-                } 
+                element={<Layout><AddRecommendation /></Layout>} 
               />
               <Route path="*" element={<Layout><NotFound /></Layout>} />
             </Routes>

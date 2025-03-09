@@ -1,5 +1,6 @@
+
 import { Person, Recommendation, RecommendationType } from './types';
-import { dbConfig, SHOW_TEST_DATA_FOR_VISITORS } from './storageConfig';
+import { dbConfig, SHOW_TEST_DATA_FOR_VISITORS, ALLOW_VISITOR_RECOMMENDATIONS } from './storageConfig';
 import { supabase } from '@/integrations/supabase/client';
 import { mockPeople, mockRecommendations } from './mockData';
 
@@ -8,6 +9,9 @@ import { mockPeople, mockRecommendations } from './mockData';
 let recommendationsStore: Recommendation[] = [];
 let peopleStore: Person[] = [];
 let initialized = false;
+
+// For non-authenticated users (session-specific storage)
+let visitorRecommendationsStore: Recommendation[] = [];
 
 const initializeDatabaseStorage = async (): Promise<void> => {
   if (initialized) return;
@@ -36,6 +40,8 @@ const initializeDatabaseStorage = async (): Promise<void> => {
       // Use mock data for unauthenticated users
       recommendationsStore = [...mockRecommendations];
       peopleStore = [...mockPeople];
+      // Initialize empty visitor recommendations store
+      visitorRecommendationsStore = [];
     }
     
     initialized = true;
@@ -59,9 +65,9 @@ const getRecommendations = async (): Promise<Recommendation[]> => {
     // For this example, we're using the in-memory store which would be empty for authenticated users
     return [...recommendationsStore];
   } else if (SHOW_TEST_DATA_FOR_VISITORS) {
-    console.log('Fetching mock recommendations for unauthenticated visitor');
-    // Return mock data for unauthenticated users
-    return [...mockRecommendations];
+    console.log('Fetching mock recommendations and visitor recommendations for unauthenticated visitor');
+    // Return mock data and any visitor-created recommendations for the current session
+    return [...mockRecommendations, ...visitorRecommendationsStore];
   } else {
     console.log('Unauthorized access attempt');
     return [];
@@ -79,8 +85,10 @@ const getRecommendationById = async (id: string): Promise<Recommendation | undef
     console.log(`Fetching user-specific recommendation with ID ${id} from database`);
     return recommendationsStore.find(rec => rec.id === id);
   } else if (SHOW_TEST_DATA_FOR_VISITORS) {
-    console.log(`Fetching mock recommendation with ID ${id} for unauthenticated visitor`);
-    return mockRecommendations.find(rec => rec.id === id);
+    console.log(`Fetching recommendation with ID ${id} for unauthenticated visitor`);
+    // Check in visitor recommendations first, then in mock data
+    return visitorRecommendationsStore.find(rec => rec.id === id) || 
+           mockRecommendations.find(rec => rec.id === id);
   } else {
     console.log('Unauthorized access attempt');
     return undefined;
@@ -98,8 +106,9 @@ const getRecommendationsByType = async (type: RecommendationType): Promise<Recom
     console.log(`Fetching user-specific recommendations of type ${type} from database`);
     return recommendationsStore.filter(rec => rec.type === type);
   } else if (SHOW_TEST_DATA_FOR_VISITORS) {
-    console.log(`Fetching mock recommendations of type ${type} for unauthenticated visitor`);
-    return mockRecommendations.filter(rec => rec.type === type);
+    console.log(`Fetching recommendations of type ${type} for unauthenticated visitor`);
+    // Combine and filter both mock data and visitor recommendations
+    return [...mockRecommendations, ...visitorRecommendationsStore].filter(rec => rec.type === type);
   } else {
     console.log('Unauthorized access attempt');
     return [];
@@ -118,9 +127,12 @@ const addRecommendation = async (recommendation: Recommendation): Promise<void> 
     // In a real implementation, this would insert into a real database
     // For this simulation, we'll just add to our in-memory store
     recommendationsStore.push(recommendation);
+  } else if (ALLOW_VISITOR_RECOMMENDATIONS) {
+    console.log('Adding in-memory recommendation for unauthenticated visitor');
+    // Store in the visitor-specific in-memory store
+    visitorRecommendationsStore.push(recommendation);
   } else {
-    console.log('Adding mock recommendation for unauthenticated user');
-    mockRecommendations.push(recommendation);
+    throw new Error('Unauthorized: Cannot add recommendations without logging in');
   }
   
   console.log('Added recommendation', recommendation.id);
@@ -177,12 +189,15 @@ const updateRecommendation = async (updatedRec: Recommendation): Promise<void> =
       console.log('Updated recommendation', updatedRec.id);
     }
   } else {
-    console.log('Updating mock recommendation for unauthenticated user');
-    const index = mockRecommendations.findIndex(rec => rec.id === updatedRec.id);
+    // Check if it's a visitor-added recommendation
+    const visitorIndex = visitorRecommendationsStore.findIndex(rec => rec.id === updatedRec.id);
     
-    if (index !== -1) {
-      mockRecommendations[index] = updatedRec;
+    if (visitorIndex !== -1) {
+      console.log('Updating visitor-specific recommendation');
+      visitorRecommendationsStore[visitorIndex] = updatedRec;
       console.log('Updated recommendation', updatedRec.id);
+    } else {
+      console.log('Cannot update mock recommendations');
     }
   }
 };
@@ -198,10 +213,14 @@ const deleteRecommendation = async (id: string): Promise<void> => {
     console.log('Deleting user-specific recommendation from database');
     recommendationsStore = recommendationsStore.filter(rec => rec.id !== id);
   } else {
-    console.log('Deleting mock recommendation for unauthenticated user');
-    const mockIndex = mockRecommendations.findIndex(rec => rec.id === id);
-    if (mockIndex !== -1) {
-      mockRecommendations.splice(mockIndex, 1);
+    // Check if it's a visitor-added recommendation
+    const visitorIndex = visitorRecommendationsStore.findIndex(rec => rec.id === id);
+    
+    if (visitorIndex !== -1) {
+      console.log('Deleting visitor-specific recommendation');
+      visitorRecommendationsStore = visitorRecommendationsStore.filter(rec => rec.id !== id);
+    } else {
+      console.log('Cannot delete mock recommendations');
     }
   }
   
