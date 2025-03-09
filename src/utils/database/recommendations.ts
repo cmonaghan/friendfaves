@@ -3,8 +3,9 @@ import { Recommendation, RecommendationType } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   initializeDatabaseStorage, 
-  visitorRecommendationsStore, 
-  recommendationsStore 
+  visitorRecommendationsStore,
+  recommendationsStore,
+  removeVisitorRecommendation
 } from './initialization';
 import { SHOW_TEST_DATA_FOR_VISITORS, ALLOW_VISITOR_RECOMMENDATIONS } from '../storageConfig';
 import { mockRecommendations } from '../mockData';
@@ -265,7 +266,8 @@ export const deleteRecommendation = async (id: string): Promise<void> => {
     
     if (visitorIndex !== -1) {
       console.log('Deleting visitor-specific recommendation');
-      visitorRecommendationsStore = visitorRecommendationsStore.filter(rec => rec.id !== id);
+      // Use the helper function instead of direct reassignment
+      removeVisitorRecommendation(id);
     } else {
       console.log('Cannot delete mock recommendations');
     }

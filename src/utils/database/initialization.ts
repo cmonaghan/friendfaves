@@ -53,3 +53,17 @@ export const initializeDatabaseStorage = async (): Promise<void> => {
     throw new Error('Database connection failed');
   }
 };
+
+/**
+ * Updates visitor recommendations (for use in operations that would normally mutate the imported array)
+ */
+export const updateVisitorRecommendations = (updatedRecommendations: any[]): void => {
+  visitorRecommendationsStore = [...updatedRecommendations];
+};
+
+/**
+ * Removes a visitor recommendation by ID
+ */
+export const removeVisitorRecommendation = (id: string): void => {
+  visitorRecommendationsStore = visitorRecommendationsStore.filter(rec => rec.id !== id);
+};
