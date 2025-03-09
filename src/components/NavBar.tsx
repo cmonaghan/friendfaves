@@ -11,11 +11,13 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import LoadingSpinner from "./LoadingSpinner";
 
 const NavBar = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const { user, signOut } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,8 +29,16 @@ const NavBar = () => {
   }, []);
 
   const handleSignOut = async () => {
-    await signOut();
-    toast.success("Signed out successfully");
+    try {
+      setIsSigningOut(true);
+      await signOut();
+      toast.success("Signed out successfully");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error("Failed to sign out. Please try again.");
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   const navLinks = [
@@ -81,9 +91,17 @@ const NavBar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sign out</span>
+                  <DropdownMenuItem 
+                    onClick={handleSignOut} 
+                    className="cursor-pointer"
+                    disabled={isSigningOut}
+                  >
+                    {isSigningOut ? (
+                      <LoadingSpinner size={16} className="mr-2" />
+                    ) : (
+                      <LogOut className="mr-2 h-4 w-4" />
+                    )}
+                    <span>{isSigningOut ? "Signing out..." : "Sign out"}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
