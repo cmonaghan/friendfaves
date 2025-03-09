@@ -61,7 +61,7 @@ const AddRecommendationForm = () => {
     };
 
     loadPeople();
-  }, []);
+  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
