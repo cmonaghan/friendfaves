@@ -44,6 +44,8 @@ export const initializeDatabaseStorage = async (): Promise<void> => {
       peopleStore = [...mockPeople];
       // Initialize empty visitor recommendations store
       visitorRecommendationsStore = [];
+      // Initialize empty visitor custom categories store
+      visitorCustomCategoriesStore = [];
     }
     
     initialized = true;

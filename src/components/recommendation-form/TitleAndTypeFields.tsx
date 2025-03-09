@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UseFormReturn } from "react-hook-form";
 import { RecommendationFormValues } from "./types";
 import { useCustomCategories } from "@/hooks/useRecommendationQueries";
+import { useAuth } from "@/contexts/AuthProvider";
 
 interface TitleAndTypeFieldsProps {
   form: UseFormReturn<RecommendationFormValues>;
@@ -16,6 +17,7 @@ interface TitleAndTypeFieldsProps {
 export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsProps) {
   // Fetch custom categories from the database
   const { data: customCategories = [] } = useCustomCategories();
+  const { user } = useAuth();
 
   return (
     <div className="space-y-6">
@@ -66,7 +68,7 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
                 <SelectItem value={RecommendationType.OTHER}>
                   <div className="flex items-center gap-2">
                     <Plus className="h-4 w-4" />
-                    <span>Custom Category</span>
+                    <span>{user ? "Custom Category" : "Custom Category (Session Only)"}</span>
                   </div>
                 </SelectItem>
               </SelectContent>

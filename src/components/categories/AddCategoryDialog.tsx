@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/contexts/AuthProvider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ interface AddCategoryDialogProps {
 export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
@@ -65,7 +67,11 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
       const result = await addCustomCategory(newCategory);
       
       if (result) {
-        toast.success("Category added successfully");
+        if (user) {
+          toast.success("Category added successfully to your account");
+        } else {
+          toast.success("Category added for this session");
+        }
         
         // Invalidate the custom categories query to refetch the updated data
         queryClient.invalidateQueries({
@@ -97,7 +103,9 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
         <DialogHeader>
           <DialogTitle>Add New Category</DialogTitle>
           <DialogDescription>
-            Create a custom category for your recommendations.
+            {user 
+              ? "Create a custom category for your recommendations."
+              : "Create a custom category for this session. Sign in to save it permanently."}
           </DialogDescription>
         </DialogHeader>
         
