@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -33,10 +32,8 @@ const ViewRecommendation = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Access the query client for cache invalidation
   const queryClient = useQueryClient();
   
-  // Fetch recommendation with caching
   const { data: recommendation, isLoading, error } = useRecommendationById(id || '');
   
   const handleToggleComplete = async () => {
@@ -50,13 +47,11 @@ const ViewRecommendation = () => {
       
       await updateRecommendation(updatedRecommendation);
       
-      // Update the cache with the new data
       queryClient.setQueryData(
         queryKeys.recommendationById(recommendation.id),
         updatedRecommendation
       );
       
-      // Invalidate the recommendations list to refresh the data
       queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
       
       toast({
@@ -81,7 +76,6 @@ const ViewRecommendation = () => {
     try {
       await deleteRecommendation(recommendation.id);
       
-      // Invalidate the cache to refresh the data
       queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
       
       toast({
@@ -129,7 +123,6 @@ const ViewRecommendation = () => {
     );
   }
   
-  // Format date
   const formattedDate = new Date(recommendation.date).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -138,7 +131,6 @@ const ViewRecommendation = () => {
   
   return (
     <div className="max-w-3xl mx-auto pb-12 pt-6 px-4">
-      {/* Back button */}
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild className="pl-0 hover:bg-transparent">
           <Link to="/recommendations" className="flex items-center gap-2 text-base">
@@ -148,7 +140,6 @@ const ViewRecommendation = () => {
         </Button>
       </div>
       
-      {/* Action buttons */}
       <div className="flex justify-end gap-2 mb-6">
         <Button 
           variant={recommendation.isCompleted ? "outline" : "default"}
@@ -193,9 +184,7 @@ const ViewRecommendation = () => {
         </Dialog>
       </div>
       
-      {/* Content card */}
       <div className="bg-card rounded-lg shadow-sm overflow-hidden border">
-        {/* Header section */}
         <div className="p-6 sm:p-8 border-b">
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <CategoryTag type={recommendation.type} customCategory={recommendation.customCategory} />
@@ -224,7 +213,6 @@ const ViewRecommendation = () => {
           </div>
         </div>
         
-        {/* Content section */}
         <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-3">
             <div>
@@ -236,13 +224,12 @@ const ViewRecommendation = () => {
           </div>
           
           <div className="md:col-span-1">
-            <div className="bg-secondary/50 p-4 rounded-lg text-center">
+            <div className="bg-secondary/50 p-4 rounded-lg">
               <h3 className="text-sm font-medium mb-3">Recommended By</h3>
               <Avatar 
                 person={recommendation.recommender} 
                 size="lg" 
-                showName={true} 
-                className="avatar-wrapper-vertical"
+                showName={true}
               />
             </div>
           </div>

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -131,14 +130,4 @@
   background: transparent;
 }
 
-/* Recommendation detail page styles */
-.avatar-wrapper-vertical {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-.avatar-wrapper-vertical > span {
-  margin-left: 0;
-  margin-top: 0.5rem;
-}
+/* Recommendation detail page styles - removed vertical avatar wrapper styles */
