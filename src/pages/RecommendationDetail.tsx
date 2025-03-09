@@ -1,412 +1,257 @@
-
-import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { toast } from "sonner";
-import { Recommendation, RecommendationType } from '@/utils/types';
-import { getRecommendationById, updateRecommendation, deleteRecommendation, getPeople } from '@/utils/storage';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Pencil, Trash2, CheckSquare, Square } from 'lucide-react';
 import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  CheckCircle2, 
-  XCircle,
-  Calendar,
-  MapPin,
-  Save
-} from 'lucide-react';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { deleteRecommendation, updateRecommendation } from '@/utils/storage';
+import { RecommendationType } from '@/utils/types';
 import CategoryTag from '@/components/CategoryTag';
-import Avatar from '@/components/Avatar';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Person } from '@/utils/types';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthProvider';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { useQueryClient } from '@tanstack/react-query';
+import { useRecommendationById } from '@/hooks/useRecommendationQueries';
+
+// Import the queryKeys for cache invalidation
+import { queryKeys } from '@/hooks/useRecommendationQueries';
 
 const RecommendationDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [people, setPeople] = useState<Person[]>([]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
-  // Editing state
-  const [editTitle, setEditTitle] = useState('');
-  const [editType, setEditType] = useState<RecommendationType>(RecommendationType.BOOK);
-  const [editRecommenderId, setEditRecommenderId] = useState('');
-  const [editReason, setEditReason] = useState('');
-  const [editSource, setEditSource] = useState('');
+  // Access the query client for cache invalidation
+  const queryClient = useQueryClient();
   
-  useEffect(() => {
-    // Fetch recommendation from storage
-    const fetchRecommendation = async () => {
-      try {
-        if (!id) return navigate('/not-found');
-        
-        const data = await getRecommendationById(id);
-        if (!data) return navigate('/not-found');
-        
-        setRecommendation(data);
-        setIsCompleted(data.isCompleted);
-        
-        // Set edit form initial values
-        setEditTitle(data.title);
-        setEditType(data.type);
-        setEditRecommenderId(data.recommender.id);
-        setEditReason(data.reason || '');
-        setEditSource(data.source || '');
-        
-        // Fetch people for recommender dropdown
-        const peopleData = await getPeople();
-        setPeople(peopleData);
-      } catch (error) {
-        console.error('Error fetching recommendation:', error);
-        toast.error('Failed to load recommendation');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchRecommendation();
-  }, [id, navigate]);
+  // Fetch recommendation with caching
+  const { data: recommendation, isLoading, error } = useRecommendationById(id || '');
   
   const handleToggleComplete = async () => {
     if (!recommendation) return;
     
     try {
-      // Update completed status in state
-      const newStatus = !isCompleted;
-      setIsCompleted(newStatus);
-      
-      // Update in storage
       const updatedRecommendation = {
         ...recommendation,
-        isCompleted: newStatus
+        isCompleted: !recommendation.isCompleted
       };
       
       await updateRecommendation(updatedRecommendation);
-      setRecommendation(updatedRecommendation);
       
-      toast.success(
-        newStatus 
-          ? 'Marked as completed!' 
-          : 'Marked as not completed'
+      // Update the cache with the new data
+      queryClient.setQueryData(
+        queryKeys.recommendationById(recommendation.id),
+        updatedRecommendation
       );
+      
+      // Invalidate the recommendations list to refresh the data
+      queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
+      
+      toast({
+        title: updatedRecommendation.isCompleted ? "Marked as completed" : "Marked as not completed",
+        description: updatedRecommendation.title,
+      });
     } catch (error) {
       console.error('Error updating recommendation:', error);
-      toast.error('Failed to update recommendation');
-      // Revert state on error
-      setIsCompleted(recommendation.isCompleted);
+      toast({
+        title: "Error",
+        description: "Failed to update recommendation status",
+        variant: "destructive",
+      });
     }
   };
   
   const handleDelete = async () => {
-    if (!id) return;
+    if (!recommendation) return;
+    
+    setIsDeleting(true);
     
     try {
-      // Delete from storage
-      await deleteRecommendation(id);
+      await deleteRecommendation(recommendation.id);
       
-      toast.success('Recommendation deleted');
+      // Invalidate the cache to refresh the data
+      queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
+      
+      toast({
+        title: "Recommendation deleted",
+        description: recommendation.title,
+      });
+      
       navigate('/recommendations');
     } catch (error) {
       console.error('Error deleting recommendation:', error);
-      toast.error('Failed to delete recommendation');
+      toast({
+        title: "Error",
+        description: "Failed to delete recommendation",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
     }
   };
   
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-    
-    // Reset form values if canceling edit
-    if (isEditing && recommendation) {
-      setEditTitle(recommendation.title);
-      setEditType(recommendation.type);
-      setEditRecommenderId(recommendation.recommender.id);
-      setEditReason(recommendation.reason || '');
-      setEditSource(recommendation.source || '');
-    }
-  };
-  
-  const handleSaveEdit = async () => {
-    if (!recommendation) return;
-    
-    try {
-      // Find the selected recommender
-      const selectedRecommender = people.find(p => p.id === editRecommenderId);
-      
-      if (!selectedRecommender) {
-        toast.error('Please select a valid recommender');
-        return;
-      }
-      
-      // Create updated recommendation object
-      const updatedRecommendation = {
-        ...recommendation,
-        title: editTitle,
-        type: editType,
-        recommender: selectedRecommender,
-        reason: editReason || undefined,
-        source: editSource || undefined,
-      };
-      
-      // Save to storage
-      await updateRecommendation(updatedRecommendation);
-      
-      // Update local state
-      setRecommendation(updatedRecommendation);
-      setIsEditing(false);
-      
-      toast.success('Recommendation updated successfully');
-    } catch (error) {
-      console.error('Error updating recommendation:', error);
-      toast.error('Failed to update recommendation');
-    }
-  };
-  
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-pulse">Loading recommendation...</div>
+      <div className="max-w-screen-xl mx-auto py-12">
+        <div className="flex flex-col items-center justify-center min-h-[40vh]">
+          <LoadingSpinner size={40} text="Loading recommendation..." />
+        </div>
       </div>
     );
   }
   
-  if (!recommendation) {
+  if (error || !recommendation) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold mb-4">Recommendation not found</h2>
-        <Button asChild>
-          <Link to="/recommendations">Back to Recommendations</Link>
-        </Button>
+      <div className="max-w-screen-xl mx-auto py-12">
+        <div className="flex flex-col items-center justify-center min-h-[40vh]">
+          <h2 className="text-2xl font-bold mb-4">Recommendation Not Found</h2>
+          <p className="text-muted-foreground mb-6">
+            The recommendation you're looking for doesn't exist or has been deleted.
+          </p>
+          <Button asChild>
+            <Link to="/recommendations">Back to Recommendations</Link>
+          </Button>
+        </div>
       </div>
     );
   }
-  
-  const formattedDate = new Date(recommendation.date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
   
   return (
-    <div className="max-w-screen-lg mx-auto animate-fade-in">
-      <div className="mb-6 flex items-center">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mr-2">
-          <ArrowLeft size={16} className="mr-1" />
-          Back
-        </Button>
-        <div className="ml-auto flex gap-2">
-          <Button 
-            variant={isCompleted ? "outline" : "default"}
+    <div className="max-w-screen-xl mx-auto">
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" asChild>
+            <Link to="/recommendations">
+              <ArrowLeft size={20} />
+            </Link>
+          </Button>
+          <h1 className="text-3xl font-bold">{recommendation.title}</h1>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="icon"
             onClick={handleToggleComplete}
-            className="gap-1"
+            title={recommendation.isCompleted ? "Mark as not completed" : "Mark as completed"}
           >
-            {isCompleted ? (
-              <>
-                <XCircle size={16} />
-                Mark Incomplete
-              </>
-            ) : (
-              <>
-                <CheckCircle2 size={16} />
-                Mark Complete
-              </>
-            )}
+            {recommendation.isCompleted ? <CheckSquare size={20} /> : <Square size={20} />}
           </Button>
           
-          {isEditing ? (
-            <>
-              <Button variant="outline" onClick={handleEditToggle} className="gap-1">
-                <XCircle size={16} />
-                Cancel
-              </Button>
-              <Button variant="default" onClick={handleSaveEdit} className="gap-1">
-                <Save size={16} />
-                Save Changes
-              </Button>
-            </>
-          ) : (
-            <Button variant="outline" onClick={handleEditToggle} className="gap-1">
-              <Edit size={16} />
-              Edit
-            </Button>
-          )}
+          <Button variant="outline" size="icon" asChild>
+            <Link to={`/recommendation/${recommendation.id}/edit`}>
+              <Pencil size={20} />
+            </Link>
+          </Button>
           
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="gap-1">
-                <Trash2 size={16} />
-                Delete
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Trash2 size={20} />
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete this recommendation.
-                  This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Recommendation</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete "{recommendation.title}"? This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                  {isDeleting ? <LoadingSpinner size={16} /> : "Delete"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       
-      <div className="bg-card rounded-xl overflow-hidden shadow-sm border">
-        {/* Header */}
-        <div className="p-6 sm:p-8 border-b">
-          {isEditing ? (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-3 mb-4">
-                <div className="w-full">
-                  <label className="block text-sm font-medium mb-1">Type</label>
-                  <Select
-                    value={editType}
-                    onValueChange={(value) => setEditType(value as RecommendationType)}
-                  >
-                    <SelectTrigger className="w-full md:w-auto min-w-[180px]">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={RecommendationType.BOOK}>Book</SelectItem>
-                      <SelectItem value={RecommendationType.MOVIE}>Movie</SelectItem>
-                      <SelectItem value={RecommendationType.TV}>TV Show</SelectItem>
-                      <SelectItem value={RecommendationType.RECIPE}>Recipe</SelectItem>
-                      <SelectItem value={RecommendationType.RESTAURANT}>Restaurant</SelectItem>
-                      <SelectItem value={RecommendationType.PODCAST}>Podcast</SelectItem>
-                      <SelectItem value={RecommendationType.OTHER}>Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <Input
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="text-xl font-medium"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Where to find it</label>
-                <Input 
-                  type="text"
-                  value={editSource}
-                  onChange={(e) => setEditSource(e.target.value)}
-                  placeholder="E.g. Netflix, Local Bookstore, etc."
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Recommended By</label>
-                <Select
-                  value={editRecommenderId}
-                  onValueChange={setEditRecommenderId}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select who recommended this" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {people.map((person) => (
-                      <SelectItem key={person.id} value={person.id}>
-                        {person.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      <div className="mb-6">
+        <CategoryTag type={recommendation.type} customCategory={recommendation.customCategory} />
+        <div className="mt-4 flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full overflow-hidden">
+              <img 
+                src={recommendation.recommender.avatar || '/placeholder.svg'} 
+                alt={recommendation.recommender.name}
+                className="w-full h-full object-cover"
+              />
             </div>
-          ) : (
+            <span className="text-sm text-muted-foreground">
+              Recommended by <strong>{recommendation.recommender.name}</strong>
+            </span>
+          </div>
+          <span className="text-sm text-muted-foreground mx-2">•</span>
+          <span className="text-sm text-muted-foreground">
+            {new Date(recommendation.date).toLocaleDateString()}
+          </span>
+          {recommendation.isCompleted && (
             <>
-              <div className="flex flex-wrap items-center gap-3 mb-4">
-                <CategoryTag type={recommendation.type} size="md" />
-                {isCompleted && (
-                  <span className="text-green-600 flex items-center gap-1 text-sm px-3 py-1 bg-green-50 rounded-full">
-                    <CheckCircle2 size={16} />
-                    Completed
-                  </span>
-                )}
-              </div>
-              
-              <h1 className="text-3xl font-bold mb-3">{recommendation.title}</h1>
-              
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar size={16} />
-                  <span>{formattedDate}</span>
-                </div>
-                
-                {recommendation.source && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin size={16} />
-                    <span>{recommendation.source}</span>
-                  </div>
-                )}
-              </div>
+              <span className="text-sm text-muted-foreground mx-2">•</span>
+              <span className="text-sm font-medium text-green-600 dark:text-green-500">
+                Completed
+              </span>
             </>
           )}
         </div>
-        
-        {/* Content */}
-        <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-3">
-            {isEditing ? (
-              <div>
-                <label className="block text-sm font-medium mb-1">Why They Recommended It</label>
-                <Textarea
-                  value={editReason}
-                  onChange={(e) => setEditReason(e.target.value)}
-                  placeholder="Enter their reason for recommending it"
-                  className="min-h-24"
-                />
-              </div>
-            ) : (
-              <div>
-                <h2 className="text-lg font-semibold mb-3">Why They Recommended It</h2>
-                <div className="bg-secondary/50 p-4 rounded-lg">
-                  <p className="italic text-muted-foreground">{recommendation.reason ? `"${recommendation.reason}"` : "No reason provided"}</p>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <div className="md:col-span-1">
-            <div className="bg-secondary/50 p-4 rounded-lg">
-              <h3 className="text-sm font-medium mb-3">Recommended By</h3>
-              <Avatar person={recommendation.recommender} showName size="lg" />
-            </div>
-          </div>
-        </div>
       </div>
+      
+      <Tabs defaultValue="details" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="notes">Notes</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="details" className="space-y-6">
+          {recommendation.reason && (
+            <div>
+              <h3 className="text-lg font-medium mb-2">Why it was recommended</h3>
+              <div className="bg-muted p-4 rounded-md">
+                <p>{recommendation.reason}</p>
+              </div>
+            </div>
+          )}
+          
+          {recommendation.source && (
+            <div>
+              <h3 className="text-lg font-medium mb-2">Where to find it</h3>
+              <div className="bg-muted p-4 rounded-md">
+                <p>{recommendation.source}</p>
+              </div>
+            </div>
+          )}
+          
+          {!recommendation.reason && !recommendation.source && (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">No additional details available.</p>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="notes" className="space-y-6">
+          <div className="py-8 text-center">
+            <p className="text-muted-foreground mb-4">No notes added yet.</p>
+            <Button variant="outline" disabled>Add Note (Coming Soon)</Button>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -1,7 +1,5 @@
-
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getRecommendations, getCustomCategories } from '@/utils/storage';
 import RecommendationCard from '@/components/RecommendationCard';
 import { RecommendationType, CustomCategory } from '@/utils/types';
 import { useStaggeredAnimation } from '@/utils/animations';
@@ -25,6 +23,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import { useRecommendations, useCustomCategories } from '@/hooks/useRecommendationQueries';
 
 const RecommendationList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -35,56 +34,44 @@ const RecommendationList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showCompleted, setShowCompleted] = useState(true);
-  const [recommendations, setRecommendations] = useState([]);
-  const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
-  const [loading, setLoading] = useState(true);
   
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [recommendationsData, categoriesData] = await Promise.all([
-          getRecommendations(),
-          getCustomCategories()
-        ]);
-        
-        setRecommendations(recommendationsData);
-        
-        if (user && categoriesData.length > 0) {
-          setCustomCategories(categoriesData);
-        } else {
-          const customCats = recommendationsData
-            .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
-            .map(rec => ({ 
-              type: rec.customCategory as string, 
-              label: rec.customCategory as string 
-            }));
-          
-          const uniqueCustomCats = Array.from(
-            new Map(customCats.map(cat => [cat.type, cat])).values()
-          );
-          
-          setCustomCategories(uniqueCustomCats);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, [user]);
+  // Use our new query hooks instead of direct API calls
+  const { data: recommendations = [], isLoading: recommendationsLoading } = useRecommendations();
+  const { data: customCategoriesData = [], isLoading: categoriesLoading } = useCustomCategories();
   
-  useEffect(() => {
+  const loading = recommendationsLoading || categoriesLoading;
+  
+  // Process custom categories based on data
+  const customCategories: CustomCategory[] = user 
+    ? customCategoriesData 
+    : recommendations
+        .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
+        .map(rec => ({ 
+          type: rec.customCategory as string, 
+          label: rec.customCategory as string 
+        }))
+        .reduce((unique: CustomCategory[], cat) => {
+          return unique.some(item => item.type === cat.type) 
+            ? unique 
+            : [...unique, cat];
+        }, []);
+  
+  // Update URL when active tab changes
+  const updateUrlParams = () => {
     if (activeTab === 'all') {
       searchParams.delete('type');
     } else {
       searchParams.set('type', activeTab);
     }
     setSearchParams(searchParams);
-  }, [activeTab, searchParams, setSearchParams]);
+  };
   
+  // Effect to update URL when active tab changes
+  useState(() => {
+    updateUrlParams();
+  });
+  
+  // Filter recommendations based on active tab, search query, and completed status
   const filteredRecommendations = recommendations
     .filter(rec => {
       if (activeTab === 'all') {

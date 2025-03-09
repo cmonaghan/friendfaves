@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
@@ -7,61 +6,35 @@ import { ArrowRight, Book, Film, Tv, Utensils, Store, Headphones, HelpCircle, Pl
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthProvider';
-import { getRecommendations, getCustomCategories } from '@/utils/storage';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useRecommendations, useCustomCategories } from '@/hooks/useRecommendationQueries';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<RecommendationType | string>(RecommendationType.BOOK);
   const categoryRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  const [recommendations, setRecommendations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
   const [animationComplete, setAnimationComplete] = useState(false);
   
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        console.log("Loading recommendations, user authenticated:", !!user);
-        
-        const [recommendationsData, categoriesData] = await Promise.all([
-          getRecommendations(),
-          getCustomCategories()
-        ]);
-        
-        console.log("Fetched recommendations:", recommendationsData);
-        setRecommendations(recommendationsData);
-        
-        if (user && categoriesData.length > 0) {
-          setCustomCategories(categoriesData);
-        } else {
-          const customCats = recommendationsData
-            .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
-            .map(rec => ({ 
-              type: rec.customCategory as string, 
-              label: rec.customCategory as string 
-            }));
-          
-          const uniqueCustomCats = Array.from(
-            new Map(customCats.map(cat => [cat.type, cat])).values()
-          );
-          
-          setCustomCategories(uniqueCustomCats);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setTimeout(() => {
-          setLoading(false);
-        }, 500);
-      }
-    };
-    
-    fetchData();
-  }, [user]);
+  const { data: recommendations = [], isLoading: recommendationsLoading } = useRecommendations();
+  const { data: customCategoriesData = [], isLoading: categoriesLoading } = useCustomCategories();
   
+  const loading = recommendationsLoading || categoriesLoading;
+
+  const customCategories: CustomCategory[] = user 
+    ? customCategoriesData 
+    : recommendations
+        .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
+        .map(rec => ({ 
+          type: rec.customCategory as string, 
+          label: rec.customCategory as string 
+        }))
+        .reduce((unique: CustomCategory[], cat) => {
+          return unique.some(item => item.type === cat.type) 
+            ? unique 
+            : [...unique, cat];
+        }, []);
+
   useEffect(() => {
     if (!loading && cardsRef.current) {
       const cards = cardsRef.current.querySelectorAll('.recommendation-card');
@@ -174,7 +147,6 @@ const Index = () => {
 
   return (
     <div className="max-w-screen-xl mx-auto">
-      {/* Add Recommendation button at the top - aligned to the right */}
       <div className="mb-8 flex justify-end">
         <Button asChild className="flex items-center gap-2">
           <Link to="/add">
@@ -184,7 +156,6 @@ const Index = () => {
         </Button>
       </div>
 
-      {/* Hero section - only show when user is not logged in */}
       {!user && (
         <section className="mb-12 py-12 sm:py-16 px-4">
           <div className="max-w-3xl mx-auto text-center">
