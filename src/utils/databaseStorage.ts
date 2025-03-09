@@ -63,10 +63,12 @@ const getRecommendations = async (): Promise<Recommendation[]> => {
     console.log('Fetching user-specific recommendations from database');
     // When authenticated, only show user-specific data, not mock data
     return [...recommendationsStore];
-  } else {
+  } else if (SHOW_TEST_DATA_FOR_VISITORS) {
     console.log('Fetching mock recommendations for unauthenticated visitor');
     // Always return mock data for unauthenticated visitors
     return [...mockRecommendations, ...visitorRecommendationsStore];
+  } else {
+    return [...visitorRecommendationsStore];
   }
 };
 
