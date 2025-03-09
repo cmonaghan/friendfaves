@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getRecommendations, getCustomCategories } from '@/utils/storage';
@@ -147,8 +148,8 @@ const RecommendationList = () => {
         </div>
         
         {user && (
-          <Button asChild>
-            <a href="/add" className="flex items-center gap-2">
+          <Button asChild className="flex items-center gap-2">
+            <a href="/add">
               <Plus size={16} />
               Add Recommendation
             </a>

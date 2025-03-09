@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
@@ -173,11 +174,11 @@ const Index = () => {
 
   return (
     <div className="max-w-screen-xl mx-auto">
-      {/* Add Recommendation button at the top - now left aligned */}
-      <div className="mb-8 flex justify-start">
-        <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90">
-          <Link to="/add" className="flex items-center gap-1.5">
-            <Plus size={18} />
+      {/* Add Recommendation button at the top - aligned to the right */}
+      <div className="mb-8 flex justify-end">
+        <Button asChild className="flex items-center gap-2">
+          <Link to="/add">
+            <Plus size={16} />
             Add Recommendation
           </Link>
         </Button>
