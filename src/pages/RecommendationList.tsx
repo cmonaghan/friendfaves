@@ -35,6 +35,7 @@ const RecommendationList = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showCompleted, setShowCompleted] = useState(true);
   const [recommendations, setRecommendations] = useState([]);
+  const [customCategories, setCustomCategories] = useState<{type: string, label: string}[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Fetch recommendations from storage
@@ -44,6 +45,21 @@ const RecommendationList = () => {
       try {
         const data = await getRecommendations();
         setRecommendations(data);
+        
+        // Extract unique custom categories
+        const customCats = data
+          .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
+          .map(rec => ({ 
+            type: rec.customCategory as string, 
+            label: rec.customCategory as string 
+          }));
+        
+        // Remove duplicates by type
+        const uniqueCustomCats = Array.from(
+          new Map(customCats.map(cat => [cat.type, cat])).values()
+        );
+        
+        setCustomCategories(uniqueCustomCats);
       } catch (error) {
         console.error('Error fetching recommendations:', error);
       } finally {
@@ -68,10 +84,24 @@ const RecommendationList = () => {
   const filteredRecommendations = recommendations
     .filter(rec => {
       // Filter by type
-      if (activeTab !== 'all' && rec.type !== activeTab) {
-        return false;
+      if (activeTab === 'all') {
+        return true;
       }
       
+      if (activeTab === RecommendationType.OTHER) {
+        return rec.type === RecommendationType.OTHER;
+      }
+      
+      // Check if it's a custom category
+      const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
+      if (isCustomCategory) {
+        return rec.type === RecommendationType.OTHER && rec.customCategory === activeTab;
+      }
+      
+      // Regular category
+      return rec.type === activeTab;
+    })
+    .filter(rec => {
       // Filter by search query
       if (searchQuery && !rec.title.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
@@ -193,15 +223,26 @@ const RecommendationList = () => {
         </div>
       </div>
       
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6 w-full max-w-md mx-auto">
-          <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-          <TabsTrigger value={RecommendationType.BOOK} className="flex-1">Books</TabsTrigger>
-          <TabsTrigger value={RecommendationType.MOVIE} className="flex-1">Movies</TabsTrigger>
-          <TabsTrigger value={RecommendationType.TV} className="flex-1">TV Shows</TabsTrigger>
-          <TabsTrigger value={RecommendationType.RECIPE} className="flex-1">Recipes</TabsTrigger>
-          <TabsTrigger value={RecommendationType.RESTAURANT} className="flex-1">Restaurants</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="overflow-x-auto">
+          <TabsList className="mb-6 w-full max-w-fit mx-auto">
+            <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
+            <TabsTrigger value={RecommendationType.BOOK} className="flex-1">Books</TabsTrigger>
+            <TabsTrigger value={RecommendationType.MOVIE} className="flex-1">Movies</TabsTrigger>
+            <TabsTrigger value={RecommendationType.TV} className="flex-1">TV Shows</TabsTrigger>
+            <TabsTrigger value={RecommendationType.RECIPE} className="flex-1">Recipes</TabsTrigger>
+            <TabsTrigger value={RecommendationType.RESTAURANT} className="flex-1">Restaurants</TabsTrigger>
+            {customCategories.map(category => (
+              <TabsTrigger 
+                key={category.type} 
+                value={category.type} 
+                className="flex-1"
+              >
+                {category.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
         
         <TabsContent value={activeTab} className="mt-0">
           {filteredRecommendations.length > 0 ? (
