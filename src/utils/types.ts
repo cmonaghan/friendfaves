@@ -31,3 +31,11 @@ export interface Recommendation {
   isCompleted: boolean;
   customCategory?: string; // Add field for custom category
 }
+
+export interface CustomCategory {
+  id?: string;
+  type: string;
+  label: string;
+  color?: string;
+  user_id?: string;
+}

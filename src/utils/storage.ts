@@ -1,5 +1,4 @@
-
-import { Person, Recommendation, RecommendationType } from './types';
+import { Person, Recommendation, RecommendationType, CustomCategory } from './types';
 import * as localStorage from './localStorage';
 import * as databaseStorage from './databaseStorage';
 import { isDemo, StorageProvider, currentStorageProvider } from './storageConfig';
@@ -83,5 +82,23 @@ export const deleteRecommendation = async (id: string): Promise<void> => {
     localStorage.deleteRecommendation(id);
   } else {
     await databaseStorage.deleteRecommendation(id);
+  }
+};
+
+// Get all custom categories
+export const getCustomCategories = async (): Promise<CustomCategory[]> => {
+  if (currentStorageProvider === StorageProvider.LOCAL_STORAGE) {
+    return [];
+  } else {
+    return await databaseStorage.getCustomCategories();
+  }
+};
+
+// Add a new custom category
+export const addCustomCategory = async (category: CustomCategory): Promise<CustomCategory | null> => {
+  if (currentStorageProvider === StorageProvider.LOCAL_STORAGE) {
+    return null;
+  } else {
+    return await databaseStorage.addCustomCategory(category);
   }
 };

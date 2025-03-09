@@ -1,53 +1,56 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { RecommendationType } from '@/utils/types';
+import { RecommendationType, CustomCategory } from '@/utils/types';
 import RecommendationCard from '@/components/RecommendationCard';
 import { ArrowRight, Book, Film, Tv, Utensils, Store, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthProvider';
-import { getRecommendations } from '@/utils/storage';
+import { getRecommendations, getCustomCategories } from '@/utils/storage';
 
 const Index = () => {
-  // Changed the type to allow for custom category strings
   const [activeTab, setActiveTab] = useState<RecommendationType | string>(RecommendationType.BOOK);
   const categoryRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [customCategories, setCustomCategories] = useState<{type: string, label: string}[]>([]);
+  const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
   
-  // Fetch recommendations when component mounts
   useEffect(() => {
-    const fetchRecommendations = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getRecommendations();
-        setRecommendations(data);
+        const [recommendationsData, categoriesData] = await Promise.all([
+          getRecommendations(),
+          getCustomCategories()
+        ]);
         
-        // Extract unique custom categories
-        const customCats = data
-          .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
-          .map(rec => ({ 
-            type: rec.customCategory as string, 
-            label: rec.customCategory as string 
-          }));
+        setRecommendations(recommendationsData);
         
-        // Remove duplicates by type
-        const uniqueCustomCats = Array.from(
-          new Map(customCats.map(cat => [cat.type, cat])).values()
-        );
-        
-        setCustomCategories(uniqueCustomCats);
+        if (user && categoriesData.length > 0) {
+          setCustomCategories(categoriesData);
+        } else {
+          const customCats = recommendationsData
+            .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
+            .map(rec => ({ 
+              type: rec.customCategory as string, 
+              label: rec.customCategory as string 
+            }));
+          
+          const uniqueCustomCats = Array.from(
+            new Map(customCats.map(cat => [cat.type, cat])).values()
+          );
+          
+          setCustomCategories(uniqueCustomCats);
+        }
       } catch (error) {
-        console.error('Error fetching recommendations:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchRecommendations();
-  }, [user]); // Re-fetch when user changes
+    fetchData();
+  }, [user]);
   
   const defaultCategories = [
     { type: RecommendationType.BOOK, label: 'Books', icon: Book, color: 'bg-blue-50' },
@@ -57,69 +60,31 @@ const Index = () => {
     { type: RecommendationType.RESTAURANT, label: 'Restaurants', icon: Store, color: 'bg-amber-50' },
   ];
   
-  // Add custom categories
   const categories = [
     ...defaultCategories,
     ...customCategories.map(cat => ({
       type: cat.type,
       label: cat.label,
       icon: HelpCircle,
-      color: 'bg-gray-50'
+      color: cat.color || 'bg-gray-50'
     }))
   ];
   
-  // Filter recommendations by active tab - match both enum types and custom category strings
   const filteredRecommendations = recommendations
     .filter(rec => {
       if (activeTab === RecommendationType.OTHER) {
         return rec.type === RecommendationType.OTHER;
       }
       
-      // Check if it's a custom category
       const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
       if (isCustomCategory) {
         return rec.type === RecommendationType.OTHER && rec.customCategory === activeTab;
       }
       
-      // Regular category
       return rec.type === activeTab;
     })
     .slice(0, 3);
-    
-  // Count recommendations by type
-  const recommendationCounts = categories.map(category => {
-    if (defaultCategories.some(cat => cat.type === category.type)) {
-      // Standard category
-      return {
-        ...category,
-        count: recommendations.filter(rec => rec.type === category.type).length
-      };
-    } else {
-      // Custom category
-      return {
-        ...category,
-        count: recommendations.filter(
-          rec => rec.type === RecommendationType.OTHER && rec.customCategory === category.type
-        ).length
-      };
-    }
-  });
   
-  // Staggered animation for cards
-  const cardsRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    const cards = cardsRef.current?.children;
-    if (!cards) return;
-    
-    Array.from(cards).forEach((card, index) => {
-      setTimeout(() => {
-        (card as HTMLElement).style.opacity = '1';
-        (card as HTMLElement).style.transform = 'translateY(0)';
-      }, 100 + index * 100);
-    });
-  }, [activeTab]);
-
   if (loading) {
     return (
       <div className="max-w-screen-xl mx-auto">
@@ -132,7 +97,6 @@ const Index = () => {
 
   return (
     <div className="max-w-screen-xl mx-auto">
-      {/* Hero Section */}
       <section className="mb-12 py-12 sm:py-16 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <span className="inline-block mb-4 px-3 py-1 bg-secondary text-sm font-medium rounded-full">
@@ -159,7 +123,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Categories Section */}
       <section className="mb-12">
         <div className="flex justify-between items-end mb-6">
           <h2 className="text-2xl font-bold">Categories</h2>
@@ -169,7 +132,7 @@ const Index = () => {
         </div>
         
         <div ref={categoryRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {recommendationCounts.map((category, index) => (
+          {categories.map((category, index) => (
             <Card 
               key={category.type}
               className={`cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-md`}
@@ -187,7 +150,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Recent Recommendations Section */}
       <section className="mb-12">
         <div className="flex justify-between items-end mb-6">
           <div>

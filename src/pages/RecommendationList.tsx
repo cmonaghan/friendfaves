@@ -1,9 +1,8 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getRecommendations } from '@/utils/storage';
+import { getRecommendations, getCustomCategories } from '@/utils/storage';
 import RecommendationCard from '@/components/RecommendationCard';
-import { RecommendationType } from '@/utils/types';
+import { RecommendationType, CustomCategory } from '@/utils/types';
 import { useStaggeredAnimation } from '@/utils/animations';
 import { Search, Filter, Check, SortAsc, SortDesc, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,40 +35,50 @@ const RecommendationList = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showCompleted, setShowCompleted] = useState(true);
   const [recommendations, setRecommendations] = useState([]);
-  const [customCategories, setCustomCategories] = useState<{type: string, label: string}[]>([]);
+  const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Fetch recommendations from storage
+  // Fetch recommendations and custom categories from storage
   useEffect(() => {
-    const fetchRecommendations = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await getRecommendations();
-        setRecommendations(data);
+        const [recommendationsData, categoriesData] = await Promise.all([
+          getRecommendations(),
+          getCustomCategories()
+        ]);
         
-        // Extract unique custom categories
-        const customCats = data
-          .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
-          .map(rec => ({ 
-            type: rec.customCategory as string, 
-            label: rec.customCategory as string 
-          }));
+        setRecommendations(recommendationsData);
         
-        // Remove duplicates by type
-        const uniqueCustomCats = Array.from(
-          new Map(customCats.map(cat => [cat.type, cat])).values()
-        );
-        
-        setCustomCategories(uniqueCustomCats);
+        // Set custom categories from database if user is logged in
+        // or extract from recommendations if not
+        if (user && categoriesData.length > 0) {
+          setCustomCategories(categoriesData);
+        } else {
+          // Extract unique custom categories from recommendations as fallback
+          const customCats = recommendationsData
+            .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
+            .map(rec => ({ 
+              type: rec.customCategory as string, 
+              label: rec.customCategory as string 
+            }));
+          
+          // Remove duplicates by type
+          const uniqueCustomCats = Array.from(
+            new Map(customCats.map(cat => [cat.type, cat])).values()
+          );
+          
+          setCustomCategories(uniqueCustomCats);
+        }
       } catch (error) {
-        console.error('Error fetching recommendations:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchRecommendations();
-  }, []);
+    fetchData();
+  }, [user]);
   
   // Update URL when tab changes
   useEffect(() => {

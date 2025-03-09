@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RecommendationType, Person } from "@/utils/types";
-import { getPeople, addRecommendation, addPerson } from "@/utils/storage";
+import { RecommendationType, Person, CustomCategory } from "@/utils/types";
+import { getPeople, addRecommendation, addPerson, addCustomCategory } from "@/utils/storage";
 import { toast } from "sonner";
 import { UserPlus, Plus } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthProvider";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters" }),
@@ -50,6 +51,7 @@ const AddRecommendationForm = () => {
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const loadPeople = async () => {
@@ -98,6 +100,18 @@ const AddRecommendationForm = () => {
       } else {
         const allPeople = await getPeople();
         recommender = allPeople.find(p => p.id === data.recommenderId)!;
+      }
+      
+      // Save custom category if user is creating one
+      if (isCustomCategory && data.type === RecommendationType.OTHER && data.customCategory && user) {
+        const customCategory: CustomCategory = {
+          type: data.customCategory,
+          label: data.customCategory,
+          color: 'bg-gray-50'
+        };
+        
+        await addCustomCategory(customCategory);
+        console.log("Added custom category:", customCategory);
       }
       
       const newRecommendation = {
