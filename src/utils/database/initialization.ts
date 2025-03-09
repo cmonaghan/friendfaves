@@ -69,3 +69,17 @@ export const updateVisitorRecommendations = (updatedRecommendations: any[]): voi
 export const removeVisitorRecommendation = (id: string): void => {
   visitorRecommendationsStore = visitorRecommendationsStore.filter(rec => rec.id !== id);
 };
+
+/**
+ * Updates visitor custom categories 
+ */
+export const updateVisitorCustomCategories = (updatedCategories: any[]): void => {
+  visitorCustomCategoriesStore = [...updatedCategories];
+};
+
+/**
+ * Adds a new visitor custom category
+ */
+export const addVisitorCustomCategory = (category: any): void => {
+  visitorCustomCategoriesStore.push(category);
+};

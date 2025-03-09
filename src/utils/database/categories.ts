@@ -3,7 +3,8 @@ import { CustomCategory } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   initializeDatabaseStorage, 
-  visitorCustomCategoriesStore 
+  visitorCustomCategoriesStore,
+  addVisitorCustomCategory
 } from './initialization';
 import { ALLOW_VISITOR_RECOMMENDATIONS } from '../storageConfig';
 import { getCurrentSession, isAuthenticated, getCurrentUserId } from './session';
@@ -33,7 +34,7 @@ export const getCustomCategories = async (): Promise<CustomCategory[]> => {
     
     return data || [];
   } else {
-    console.log('Fetching in-memory custom categories for unauthenticated visitor');
+    console.log('Fetching in-memory custom categories for unauthenticated visitor', visitorCustomCategoriesStore);
     // Return visitor-created custom categories for the current session
     return [...visitorCustomCategoriesStore];
   }
@@ -78,7 +79,11 @@ export const addCustomCategory = async (category: CustomCategory): Promise<Custo
       ...category,
       id: `temp-${Date.now()}`
     };
-    visitorCustomCategoriesStore.push(newCategory);
+    
+    // Add to the visitor custom categories store
+    addVisitorCustomCategory(newCategory);
+    
+    console.log('Updated visitor categories:', visitorCustomCategoriesStore);
     return newCategory;
   } else {
     throw new Error('Unauthorized: Cannot add custom categories without logging in');

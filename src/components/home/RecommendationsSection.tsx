@@ -36,13 +36,19 @@ const RecommendationsSection = ({
   // Pass the ref to the parent component
   onRef(resultsSectionRef);
   
+  // Get only the categories that should be shown in the filters
+  // (excluding the "Add Category" card which is handled separately)
+  const filterableCategories = categories.filter(cat => 
+    cat.type !== 'add-category'
+  );
+  
   return (
     <section ref={resultsSectionRef} className="mb-12">
       <div className="flex justify-between items-end mb-6">
         <div>
           <h2 className="text-2xl font-bold mb-1">Recent Recommendations</h2>
           <div className="flex flex-wrap gap-2 max-w-[90vw] overflow-x-auto pb-2">
-            {categories.map(category => (
+            {filterableCategories.map(category => (
               <button
                 key={category.type}
                 onClick={() => setActiveTab(category.type)}

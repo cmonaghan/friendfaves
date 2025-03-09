@@ -22,19 +22,7 @@ const Index = () => {
   
   const loading = recommendationsLoading || categoriesLoading;
 
-  const customCategories: CustomCategory[] = user 
-    ? customCategoriesData 
-    : recommendations
-        .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
-        .map(rec => ({ 
-          type: rec.customCategory as string, 
-          label: rec.customCategory as string 
-        }))
-        .reduce((unique: CustomCategory[], cat) => {
-          return unique.some(item => item.type === cat.type) 
-            ? unique 
-            : [...unique, cat];
-        }, []);
+  const customCategories: CustomCategory[] = customCategoriesData;
 
   useEffect(() => {
     if (!loading && document.querySelectorAll('.recommendation-card').length > 0) {
