@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
@@ -13,6 +14,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<RecommendationType | string>(RecommendationType.BOOK);
   const categoryRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
+  const resultsSectionRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const [animationComplete, setAnimationComplete] = useState(false);
   
@@ -135,6 +137,18 @@ const Index = () => {
     }
   }, [user]);
   
+  const handleCategoryClick = (categoryType: RecommendationType | string) => {
+    setActiveTab(categoryType);
+    
+    // Scroll to the results section with smooth animation
+    if (resultsSectionRef.current) {
+      resultsSectionRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+  
   if (loading) {
     return (
       <div className="max-w-screen-xl mx-auto">
@@ -197,7 +211,7 @@ const Index = () => {
             <Card 
               key={category.type}
               className={`cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-md`}
-              onClick={() => setActiveTab(category.type)}
+              onClick={() => handleCategoryClick(category.type)}
             >
               <CardContent className={`p-6 flex flex-col items-center text-center ${activeTab === category.type ? 'ring-2 ring-primary ring-opacity-50' : ''}`}>
                 <div className={`p-3 rounded-full ${category.color} mb-4`}>
@@ -211,7 +225,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="mb-12">
+      <section ref={resultsSectionRef} className="mb-12">
         <div className="flex justify-between items-end mb-6">
           <div>
             <h2 className="text-2xl font-bold mb-1">Recent Recommendations</h2>
