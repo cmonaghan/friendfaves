@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
@@ -44,18 +45,19 @@ const Index = () => {
   const getCategoryCount = (categoryType: RecommendationType | string) => {
     if (!recommendations || recommendations.length === 0) return 0;
     
-    if (categoryType === RecommendationType.OTHER) {
-      return recommendations.filter(rec => rec.type === RecommendationType.OTHER).length;
-    }
-    
     const isCustomCategory = customCategories.some(cat => cat.type === categoryType);
+    
     if (isCustomCategory) {
       return recommendations.filter(
         rec => rec.type === RecommendationType.OTHER && rec.customCategory === categoryType
       ).length;
+    } else if (categoryType === RecommendationType.OTHER) {
+      return recommendations.filter(
+        rec => rec.type === RecommendationType.OTHER && !rec.customCategory
+      ).length;
+    } else {
+      return recommendations.filter(rec => rec.type === categoryType).length;
     }
-    
-    return recommendations.filter(rec => rec.type === categoryType).length;
   };
 
   const defaultCategories = [
@@ -85,25 +87,29 @@ const Index = () => {
     
     console.log(`Filtering recommendations for tab: ${activeTab}, total recommendations:`, recommendations);
     
-    let filtered = [];
-    
     const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
     
     if (isCustomCategory) {
-      filtered = recommendations.filter(
+      // Only show recommendations that are of type OTHER and have the matching customCategory
+      const filtered = recommendations.filter(
         rec => rec.type === RecommendationType.OTHER && rec.customCategory === activeTab
       );
       console.log(`Found ${filtered.length} recommendations for custom category ${activeTab}:`, filtered);
-    } else if (activeTab === RecommendationType.OTHER) {
-      filtered = recommendations.filter(rec => 
+      return filtered.slice(0, 3);
+    } 
+    
+    if (activeTab === RecommendationType.OTHER) {
+      // Only show recommendations that are of type OTHER and DON'T have a customCategory
+      const filtered = recommendations.filter(rec => 
         rec.type === RecommendationType.OTHER && !rec.customCategory
       );
       console.log(`Found ${filtered.length} recommendations for general "Other" category:`, filtered);
-    } else {
-      filtered = recommendations.filter(rec => rec.type === activeTab);
-      console.log(`Found ${filtered.length} recommendations for standard category ${activeTab}:`, filtered);
-    }
+      return filtered.slice(0, 3);
+    } 
     
+    // Standard categories - show recommendations matching the type
+    const filtered = recommendations.filter(rec => rec.type === activeTab);
+    console.log(`Found ${filtered.length} recommendations for standard category ${activeTab}:`, filtered);
     return filtered.slice(0, 3);
   };
   
@@ -111,7 +117,11 @@ const Index = () => {
   
   const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
   
-  if (filteredRecommendations.length === 0 && !isCustomCategory && 
+  // Only show fallback recommendations for standard categories when they have no specific recommendations
+  // Never show fallback recommendations for custom categories or "Other" category
+  if (filteredRecommendations.length === 0 && 
+      !isCustomCategory && 
+      activeTab !== RecommendationType.OTHER &&
       defaultCategories.some(cat => cat.type === activeTab)) {
     console.log("No recommendations for this standard category, showing fallback recommendations");
     filteredRecommendations = recommendations.slice(0, 3);
