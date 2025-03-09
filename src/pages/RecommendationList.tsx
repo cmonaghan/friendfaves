@@ -41,6 +41,11 @@ const RecommendationList = () => {
   
   const loading = recommendationsLoading || categoriesLoading;
   
+  useEffect(() => {
+    console.log("Custom categories data:", customCategoriesData);
+    console.log("All recommendations:", recommendations);
+  }, [customCategoriesData, recommendations]);
+  
   // Process all custom categories from both API data and recommendation data
   const customCategories: CustomCategory[] = user 
     ? customCategoriesData 
@@ -221,7 +226,7 @@ const RecommendationList = () => {
             )}
             
             {/* List all custom categories as their own tabs */}
-            {customCategories.map(category => (
+            {customCategories?.map(category => (
               <TabsTrigger 
                 key={category.type} 
                 value={category.type}
