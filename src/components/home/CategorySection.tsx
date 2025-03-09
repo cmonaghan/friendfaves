@@ -1,10 +1,11 @@
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
-import { ArrowRight, Book, Film, Tv, Utensils, Store, Headphones, HelpCircle } from 'lucide-react';
+import { ArrowRight, Book, Film, Tv, Utensils, Store, Headphones, HelpCircle, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
+import { AddCategoryDialog } from '@/components/categories/AddCategoryDialog';
 
 interface CategorySectionProps {
   customCategories: CustomCategory[];
@@ -19,6 +20,7 @@ const CategorySection = ({
   activeTab, 
   onCategoryClick 
 }: CategorySectionProps) => {
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const categoryRef = useRef<HTMLDivElement>(null);
   
   const defaultCategories = [
@@ -65,7 +67,26 @@ const CategorySection = ({
             </CardContent>
           </Card>
         ))}
+        
+        {/* Add Category Card */}
+        <Card 
+          className="cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-md border-dashed"
+          onClick={() => setIsAddCategoryOpen(true)}
+        >
+          <CardContent className="p-6 flex flex-col items-center text-center">
+            <div className="p-3 rounded-full bg-gray-50 mb-4">
+              <Plus size={24} />
+            </div>
+            <h3 className="font-semibold mb-1">Add Category</h3>
+            <p className="text-sm text-muted-foreground">Create a custom category</p>
+          </CardContent>
+        </Card>
       </div>
+      
+      <AddCategoryDialog 
+        open={isAddCategoryOpen} 
+        onOpenChange={setIsAddCategoryOpen} 
+      />
     </section>
   );
 };
