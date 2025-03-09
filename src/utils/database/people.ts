@@ -24,33 +24,42 @@ export const getPeople = async (): Promise<Person[]> => {
     const session = await getCurrentSession();
     
     if (session) {
-      // Get both the user's own profile and other profiles
-      // Fix: Removed reference to non-existent created_by column
+      // Get profiles excluding the current user
       const { data, error } = await supabase
         .from('profiles')
-        .select('*');
+        .select('*')
+        .neq('id', session.user.id); // Exclude the current user's profile
       
       if (error) {
         console.error('Error fetching people:', error);
         // Return only user-created people from local store, not mock data
-        return [...peopleStore.filter(p => !mockPeople.some(mp => mp.id === p.id))];
+        // Also exclude the current user
+        return [...peopleStore.filter(p => 
+          !mockPeople.some(mp => mp.id === p.id) && 
+          p.id !== session.user.id
+        )];
       }
       
       console.log('Fetched profiles from database:', data);
       
       // Map database results to our Person type and combine with local store
-      // (filtering out any mock people from the local store)
+      // (filtering out any mock people from the local store and the current user)
       const dbPeople = data.map(profile => ({
         id: profile.id,
         name: profile.name || `Friend ${profile.id.substring(0, 4)}`,
         avatar: profile.avatar_url || '/placeholder.svg'
       }));
       
-      const nonMockPeopleStore = peopleStore.filter(p => !mockPeople.some(mp => mp.id === p.id));
+      const nonMockPeopleStore = peopleStore.filter(p => 
+        !mockPeople.some(mp => mp.id === p.id) && 
+        p.id !== session.user.id
+      );
+      
       return [...dbPeople, ...nonMockPeopleStore];
     }
     
     // Return only user-created people from local store, not mock data
+    // For cases where session exists but couldn't be retrieved
     return [...peopleStore.filter(p => !mockPeople.some(mp => mp.id === p.id))];
   } else {
     console.log('Fetching mock people for unauthenticated user');
