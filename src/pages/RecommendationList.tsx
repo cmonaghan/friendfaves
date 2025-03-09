@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import RecommendationCard from '@/components/RecommendationCard';
@@ -36,13 +35,11 @@ const RecommendationList = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showCompleted, setShowCompleted] = useState(true);
   
-  // Use our new query hooks instead of direct API calls
   const { data: recommendations = [], isLoading: recommendationsLoading } = useRecommendations();
   const { data: customCategoriesData = [], isLoading: categoriesLoading } = useCustomCategories();
   
   const loading = recommendationsLoading || categoriesLoading;
   
-  // Process custom categories based on data
   const customCategories: CustomCategory[] = user 
     ? customCategoriesData 
     : recommendations
@@ -57,7 +54,6 @@ const RecommendationList = () => {
             : [...unique, cat];
         }, []);
   
-  // Update URL when active tab changes
   const updateUrlParams = () => {
     if (activeTab === 'all') {
       searchParams.delete('type');
@@ -67,12 +63,10 @@ const RecommendationList = () => {
     setSearchParams(searchParams);
   };
   
-  // Effect to update URL when active tab changes
   useState(() => {
     updateUrlParams();
   });
   
-  // Filter recommendations based on active tab, search query, and completed status
   const filteredRecommendations = recommendations
     .filter(rec => {
       if (activeTab === 'all') {
@@ -212,20 +206,19 @@ const RecommendationList = () => {
       </div>
       
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="overflow-x-auto bg-secondary">
-          <TabsList className="mb-6 w-full max-w-fit mx-auto bg-secondary">
-            <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
-            <TabsTrigger value={RecommendationType.BOOK} className="flex-1">Books</TabsTrigger>
-            <TabsTrigger value={RecommendationType.MOVIE} className="flex-1">Movies</TabsTrigger>
-            <TabsTrigger value={RecommendationType.TV} className="flex-1">TV Shows</TabsTrigger>
-            <TabsTrigger value={RecommendationType.RECIPE} className="flex-1">Recipes</TabsTrigger>
-            <TabsTrigger value={RecommendationType.RESTAURANT} className="flex-1">Restaurants</TabsTrigger>
-            <TabsTrigger value={RecommendationType.PODCAST} className="flex-1">Podcasts</TabsTrigger>
+        <div className="overflow-x-auto bg-secondary" style={{ borderRadius: 'var(--radius)' }}>
+          <TabsList className="w-max px-1 py-1 bg-secondary mx-auto">
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value={RecommendationType.BOOK}>Books</TabsTrigger>
+            <TabsTrigger value={RecommendationType.MOVIE}>Movies</TabsTrigger>
+            <TabsTrigger value={RecommendationType.TV}>TV Shows</TabsTrigger>
+            <TabsTrigger value={RecommendationType.RECIPE}>Recipes</TabsTrigger>
+            <TabsTrigger value={RecommendationType.RESTAURANT}>Restaurants</TabsTrigger>
+            <TabsTrigger value={RecommendationType.PODCAST}>Podcasts</TabsTrigger>
             {customCategories.map(category => (
               <TabsTrigger 
                 key={category.type} 
-                value={category.type} 
-                className="flex-1"
+                value={category.type}
               >
                 {category.label}
               </TabsTrigger>
@@ -233,7 +226,7 @@ const RecommendationList = () => {
           </TabsList>
         </div>
         
-        <TabsContent value={activeTab} className="mt-0">
+        <TabsContent value={activeTab} className="mt-6">
           {filteredRecommendations.length > 0 ? (
             <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredRecommendations.map(recommendation => (

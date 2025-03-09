@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -118,7 +119,9 @@
 .overflow-x-auto.bg-secondary {
   scrollbar-width: none;  /* Firefox */
   -ms-overflow-style: none;  /* Internet Explorer and Edge */
-  padding: 0.5rem 0;
+  padding: 0.25rem 0;      /* Reduce padding from 0.5rem to 0.25rem */
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
 }
 
 .overflow-x-auto.bg-secondary::-webkit-scrollbar {
@@ -128,6 +131,25 @@
 /* Fix for tabs list to ensure it doesn't conflict with parent background */
 .overflow-x-auto.bg-secondary .bg-secondary {
   background: transparent;
+}
+
+/* Category tabs styling */
+.tabs-container {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs-list {
+  display: inline-flex;
+  white-space: nowrap;
+  padding: 0.25rem 0.5rem;
 }
 
 /* Recommendation detail page styles - removed vertical avatar wrapper styles */
