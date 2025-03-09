@@ -75,6 +75,49 @@ export const mockRecommendations: Recommendation[] = [
     source: 'Hulu',
     date: '2023-08-12',
     isCompleted: false
+  },
+  {
+    id: '6',
+    title: 'Nobu',
+    type: RecommendationType.RESTAURANT,
+    recommender: mockPeople[1],
+    reason: 'Amazing sushi and Japanese fusion cuisine. The black cod with miso is their signature dish and it\'s incredible.',
+    notes: 'Make reservations at least a month in advance',
+    source: 'Downtown location',
+    date: '2023-09-18',
+    isCompleted: false
+  },
+  {
+    id: '7',
+    title: 'The Daily',
+    type: RecommendationType.PODCAST,
+    recommender: mockPeople[2],
+    reason: 'Great daily news podcast that breaks down complex topics in an accessible way.',
+    source: 'Spotify or Apple Podcasts',
+    date: '2023-10-05',
+    isCompleted: true
+  },
+  {
+    id: '8',
+    title: 'Farm To Table',
+    type: RecommendationType.RESTAURANT,
+    recommender: mockPeople[3],
+    reason: 'Incredible seasonal menu that changes based on local ingredients. The atmosphere is cozy and service is excellent.',
+    notes: 'Ask for a table by the window',
+    source: 'West side location',
+    date: '2023-11-12',
+    isCompleted: false
+  },
+  {
+    id: '9',
+    title: 'SmartLess',
+    type: RecommendationType.PODCAST,
+    recommender: mockPeople[0],
+    reason: 'Hilarious conversations with surprise celebrity guests. The hosts have great chemistry.',
+    notes: 'Episodes are about an hour long',
+    source: 'Any podcast app',
+    date: '2023-12-03',
+    isCompleted: false
   }
 ];
 
