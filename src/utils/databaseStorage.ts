@@ -1,3 +1,4 @@
+
 import { Person, Recommendation, RecommendationType, CustomCategory } from './types';
 import { dbConfig, SHOW_TEST_DATA_FOR_VISITORS, ALLOW_VISITOR_RECOMMENDATIONS } from './storageConfig';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,8 +32,8 @@ const initializeDatabaseStorage = async (): Promise<void> => {
     
     if (session) {
       console.log('User is authenticated, will use real database data');
-      // In a real implementation, this would connect to a real database
-      // For this example, we'll use an empty store to simulate user-specific data
+      // For authenticated users, we'll query their data from Supabase
+      // Initialize with empty arrays, data will be fetched when needed
       recommendationsStore = [];
       peopleStore = [];
     } else {
@@ -61,8 +62,43 @@ const getRecommendations = async (): Promise<Recommendation[]> => {
   
   if (session) {
     console.log('Fetching user-specific recommendations from database');
-    // When authenticated, only show user-specific data, not mock data
-    return [...recommendationsStore];
+    
+    // Fetch user's recommendations from Supabase
+    const { data, error } = await supabase
+      .from('recommendations')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching recommendations:', error);
+      return [];
+    }
+    
+    // Map the database records to our Recommendation type
+    const recommendations: Recommendation[] = await Promise.all(data.map(async (rec) => {
+      // For each recommendation, we need to look up the recommender details
+      // TODO: In a real app, we would fetch this from a people/contacts table
+      // For now, we'll use the recommender_id as a placeholder
+      return {
+        id: rec.id,
+        title: rec.title,
+        type: rec.type as RecommendationType,
+        recommender: {
+          id: rec.recommender_id,
+          name: rec.recommender_id, // This should be replaced with actual name lookup
+          avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
+        },
+        reason: rec.reason || undefined,
+        notes: rec.notes || undefined,
+        source: rec.source || undefined,
+        date: rec.date,
+        isCompleted: rec.is_completed,
+        customCategory: rec.custom_category || undefined
+      };
+    }));
+    
+    return recommendations;
   } else if (SHOW_TEST_DATA_FOR_VISITORS) {
     console.log('Fetching mock recommendations for unauthenticated visitor');
     // Always return mock data for unauthenticated visitors
@@ -122,9 +158,30 @@ const addRecommendation = async (recommendation: Recommendation): Promise<void> 
   
   if (session) {
     console.log('Adding user-specific recommendation to database');
-    // In a real implementation, this would insert into a real database
-    // For this simulation, we'll just add to our in-memory store
-    recommendationsStore.push(recommendation);
+    
+    // Insert the recommendation into Supabase
+    const { error } = await supabase
+      .from('recommendations')
+      .insert([{
+        id: recommendation.id,
+        title: recommendation.title,
+        type: recommendation.type,
+        recommender_id: recommendation.recommender.id,
+        reason: recommendation.reason,
+        notes: recommendation.notes,
+        source: recommendation.source,
+        date: recommendation.date,
+        is_completed: recommendation.isCompleted,
+        custom_category: recommendation.customCategory,
+        user_id: session.user.id
+      }]);
+    
+    if (error) {
+      console.error('Error adding recommendation:', error);
+      throw new Error('Failed to add recommendation to database');
+    }
+    
+    console.log('Added recommendation to database:', recommendation.id);
   } else if (ALLOW_VISITOR_RECOMMENDATIONS) {
     console.log('Adding in-memory recommendation for unauthenticated visitor');
     // Store in the visitor-specific in-memory store
@@ -181,12 +238,29 @@ const updateRecommendation = async (updatedRec: Recommendation): Promise<void> =
   
   if (session) {
     console.log('Updating user-specific recommendation in database');
-    const index = recommendationsStore.findIndex(rec => rec.id === updatedRec.id);
     
-    if (index !== -1) {
-      recommendationsStore[index] = updatedRec;
-      console.log('Updated recommendation', updatedRec.id);
+    // Update the recommendation in Supabase
+    const { error } = await supabase
+      .from('recommendations')
+      .update({
+        title: updatedRec.title,
+        type: updatedRec.type,
+        recommender_id: updatedRec.recommender.id,
+        reason: updatedRec.reason,
+        notes: updatedRec.notes,
+        source: updatedRec.source,
+        is_completed: updatedRec.isCompleted,
+        custom_category: updatedRec.customCategory
+      })
+      .eq('id', updatedRec.id)
+      .eq('user_id', session.user.id);
+    
+    if (error) {
+      console.error('Error updating recommendation:', error);
+      throw new Error('Failed to update recommendation in database');
     }
+    
+    console.log('Updated recommendation', updatedRec.id);
   } else {
     // Check if it's a visitor-added recommendation
     const visitorIndex = visitorRecommendationsStore.findIndex(rec => rec.id === updatedRec.id);
@@ -210,7 +284,20 @@ const deleteRecommendation = async (id: string): Promise<void> => {
   
   if (session) {
     console.log('Deleting user-specific recommendation from database');
-    recommendationsStore = recommendationsStore.filter(rec => rec.id !== id);
+    
+    // Delete the recommendation from Supabase
+    const { error } = await supabase
+      .from('recommendations')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', session.user.id);
+    
+    if (error) {
+      console.error('Error deleting recommendation:', error);
+      throw new Error('Failed to delete recommendation from database');
+    }
+    
+    console.log('Deleted recommendation', id);
   } else {
     // Check if it's a visitor-added recommendation
     const visitorIndex = visitorRecommendationsStore.findIndex(rec => rec.id === id);

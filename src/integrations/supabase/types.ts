@@ -60,6 +60,51 @@ export type Database = {
         }
         Relationships: []
       }
+      recommendations: {
+        Row: {
+          created_at: string
+          custom_category: string | null
+          date: string
+          id: string
+          is_completed: boolean
+          notes: string | null
+          reason: string | null
+          recommender_id: string
+          source: string | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_category?: string | null
+          date: string
+          id?: string
+          is_completed?: boolean
+          notes?: string | null
+          reason?: string | null
+          recommender_id: string
+          source?: string | null
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_category?: string | null
+          date?: string
+          id?: string
+          is_completed?: boolean
+          notes?: string | null
+          reason?: string | null
+          recommender_id?: string
+          source?: string | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
