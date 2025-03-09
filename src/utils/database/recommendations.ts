@@ -1,3 +1,4 @@
+
 import { Recommendation, RecommendationType } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -10,6 +11,11 @@ import { SHOW_TEST_DATA_FOR_VISITORS, ALLOW_VISITOR_RECOMMENDATIONS } from '../s
 import { mockRecommendations } from '../mockData';
 import { getCurrentSession, isAuthenticated } from './session';
 import { getPeople } from './people';
+
+// Initialize hidden recommendations array
+if (typeof window !== 'undefined' && !window.hiddenMockRecommendations) {
+  window.hiddenMockRecommendations = [];
+}
 
 /**
  * Gets all recommendations from the database
@@ -68,8 +74,14 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
     return recommendations;
   } else if (SHOW_TEST_DATA_FOR_VISITORS) {
     console.log('Fetching mock recommendations for unauthenticated visitor');
-    // Always return mock data for unauthenticated visitors
-    return [...mockRecommendations, ...visitorRecommendationsStore];
+    
+    // Filter out hidden mock recommendations
+    const filteredMockRecommendations = mockRecommendations.filter(rec => 
+      !window.hiddenMockRecommendations?.includes(rec.id)
+    );
+    
+    // Return filtered mock data plus visitor recommendations
+    return [...filteredMockRecommendations, ...visitorRecommendationsStore];
   } else {
     return [...visitorRecommendationsStore];
   }
@@ -299,11 +311,10 @@ export const deleteRecommendation = async (id: string): Promise<void> => {
       const mockIndex = mockRecommendations.findIndex(rec => rec.id === id);
       if (mockIndex !== -1) {
         console.log('Visitor "deleting" a mock recommendation - just hiding it');
-        // Add this ID to a hidden list that's checked during getRecommendations
-        if (!window.hiddenMockRecommendations) {
-          window.hiddenMockRecommendations = [];
+        // Add this ID to the hidden list that's checked during getRecommendations
+        if (window.hiddenMockRecommendations) {
+          window.hiddenMockRecommendations.push(id);
         }
-        window.hiddenMockRecommendations.push(id);
       } else {
         console.log('Cannot delete mock recommendations');
       }
