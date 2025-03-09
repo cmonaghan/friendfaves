@@ -10,6 +10,7 @@ import {
 import { SHOW_TEST_DATA_FOR_VISITORS, ALLOW_VISITOR_RECOMMENDATIONS } from '../storageConfig';
 import { mockRecommendations } from '../mockData';
 import { getCurrentSession, isAuthenticated } from './session';
+import { getPeople } from './people';
 
 /**
  * Gets all recommendations from the database
@@ -36,20 +37,23 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
       return [];
     }
     
+    // Get all people to find recommender information
+    const people = await getPeople();
+    
     // Map the database records to our Recommendation type
-    const recommendations: Recommendation[] = await Promise.all(data.map(async (rec) => {
-      // For each recommendation, we need to look up the recommender details
-      // TODO: In a real app, we would fetch this from a people/contacts table
-      // For now, we'll use the recommender_id as a placeholder
+    const recommendations: Recommendation[] = data.map((rec) => {
+      // Find the recommender by ID in our people list
+      const recommender = people.find(person => person.id === rec.recommender_id) || {
+        id: rec.recommender_id,
+        name: rec.recommender_id,
+        avatar: '/placeholder.svg'
+      };
+      
       return {
         id: rec.id,
         title: rec.title,
         type: rec.type as RecommendationType,
-        recommender: {
-          id: rec.recommender_id,
-          name: rec.recommender_id, // This should be replaced with actual name lookup
-          avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
-        },
+        recommender: recommender,
         reason: rec.reason || undefined,
         notes: rec.notes || undefined,
         source: rec.source || undefined,
@@ -57,7 +61,7 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
         isCompleted: rec.is_completed,
         customCategory: rec.custom_category || undefined
       };
-    }));
+    });
     
     return recommendations;
   } else if (SHOW_TEST_DATA_FOR_VISITORS) {
@@ -97,16 +101,22 @@ export const getRecommendationById = async (id: string): Promise<Recommendation 
     
     if (!data) return undefined;
     
+    // Get all people to find recommender information
+    const people = await getPeople();
+    
+    // Find the recommender by ID in our people list
+    const recommender = people.find(person => person.id === data.recommender_id) || {
+      id: data.recommender_id,
+      name: data.recommender_id,
+      avatar: '/placeholder.svg'
+    };
+    
     // Map the database record to our Recommendation type
     return {
       id: data.id,
       title: data.title,
       type: data.type as RecommendationType,
-      recommender: {
-        id: data.recommender_id,
-        name: data.recommender_id, // This should be replaced with actual name lookup
-        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
-      },
+      recommender: recommender,
       reason: data.reason || undefined,
       notes: data.notes || undefined,
       source: data.source || undefined,
