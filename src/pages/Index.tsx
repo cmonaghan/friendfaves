@@ -166,7 +166,9 @@ const Index = () => {
 
   return (
     <div className="max-w-screen-xl mx-auto">
-      <div className="mb-8 flex justify-end">
+      {!user && <HeroSection />}
+
+      <div className="mb-4">
         <Button asChild className="flex items-center gap-2">
           <Link to="/add">
             <Plus size={16} />
@@ -174,8 +176,6 @@ const Index = () => {
           </Link>
         </Button>
       </div>
-
-      {!user && <HeroSection />}
 
       <CategorySection 
         customCategories={customCategories}
