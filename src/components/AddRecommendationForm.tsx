@@ -73,7 +73,9 @@ const AddRecommendationForm = () => {
   };
 
   const handleTypeChange = (value: string) => {
-    form.setValue("type", value as RecommendationType);
+    form.setValue("type", value as RecommendationType, { 
+      shouldValidate: false  // Avoid triggering validation on programmatic changes
+    });
     
     // Show the custom category field only if the user is creating a truly new category
     // which should no longer happen through the dropdown since we're using a modal now

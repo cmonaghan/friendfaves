@@ -33,6 +33,14 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
     onTypeChange(value);
   };
 
+  const handleCategoryCreated = (categoryType: string) => {
+    // When a new category is created, update the form field
+    form.setValue("type", categoryType);
+    
+    // Call parent onTypeChange to update any dependent state
+    onTypeChange(categoryType);
+  };
+
   return (
     <div className="space-y-6">
       <FormField
@@ -58,6 +66,7 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
             <Select
               onValueChange={handleTypeChange}
               defaultValue={field.value}
+              value={field.value}
             >
               <FormControl>
                 <SelectTrigger>
@@ -92,16 +101,17 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
         )}
       />
 
-      {/* Add the AddCategoryDialog component */}
+      {/* Add the AddCategoryDialog component with onCategoryCreated handler */}
       <AddCategoryDialog 
         open={showAddCategoryDialog} 
         onOpenChange={(open) => {
           setShowAddCategoryDialog(open);
           // If dialog is closed and no category was selected, reset to default
-          if (!open) {
+          if (!open && !form.getValues("type")) {
             onTypeChange(RecommendationType.BOOK);
           }
-        }} 
+        }}
+        onCategoryCreated={handleCategoryCreated}
       />
     </div>
   );
