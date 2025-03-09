@@ -39,9 +39,9 @@ export const initializeDatabaseStorage = async (): Promise<void> => {
       peopleStore = [];
     } else {
       console.log('User is NOT authenticated, will use mock data');
-      // Use mock data for unauthenticated users
-      recommendationsStore = [...mockRecommendations];
-      peopleStore = [...mockPeople];
+      // Use mock data for unauthenticated users only if configured to show test data
+      recommendationsStore = SHOW_TEST_DATA_FOR_VISITORS ? [...mockRecommendations] : [];
+      peopleStore = SHOW_TEST_DATA_FOR_VISITORS ? [...mockPeople] : [];
       // Initialize empty visitor recommendations store
       visitorRecommendationsStore = [];
       // Initialize empty visitor custom categories store
