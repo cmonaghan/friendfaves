@@ -132,10 +132,13 @@
 }
 
 /* Recommendation detail page styles */
-.flex-col > .avatar-wrapper {
-  @apply flex-col text-center;
+.avatar-wrapper-vertical {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
 }
 
-.flex-col > .avatar-wrapper > span {
-  @apply ml-0 mt-2;
+.avatar-wrapper-vertical > span {
+  margin-left: 0;
+  margin-top: 0.5rem;
 }

@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -243,7 +242,7 @@ const ViewRecommendation = () => {
               person={recommendation.recommender} 
               size="lg" 
               showName={true} 
-              className="flex-col gap-2"
+              className="avatar-wrapper-vertical"
             />
           </div>
         </div>
