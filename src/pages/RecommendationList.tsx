@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+
+import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import RecommendationCard from '@/components/RecommendationCard';
 import { RecommendationType, CustomCategory } from '@/utils/types';
@@ -54,18 +55,15 @@ const RecommendationList = () => {
             : [...unique, cat];
         }, []);
   
-  const updateUrlParams = () => {
+  // Update URL when activeTab changes
+  useEffect(() => {
     if (activeTab === 'all') {
       searchParams.delete('type');
     } else {
       searchParams.set('type', activeTab);
     }
     setSearchParams(searchParams);
-  };
-  
-  useState(() => {
-    updateUrlParams();
-  });
+  }, [activeTab, searchParams, setSearchParams]);
   
   const filteredRecommendations = recommendations
     .filter(rec => {
@@ -74,7 +72,7 @@ const RecommendationList = () => {
       }
       
       if (activeTab === RecommendationType.OTHER) {
-        return rec.type === RecommendationType.OTHER;
+        return rec.type === RecommendationType.OTHER && !rec.customCategory;
       }
       
       const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
@@ -215,6 +213,7 @@ const RecommendationList = () => {
             <TabsTrigger value={RecommendationType.RECIPE}>Recipes</TabsTrigger>
             <TabsTrigger value={RecommendationType.RESTAURANT}>Restaurants</TabsTrigger>
             <TabsTrigger value={RecommendationType.PODCAST}>Podcasts</TabsTrigger>
+            <TabsTrigger value={RecommendationType.OTHER}>Other</TabsTrigger>
             {customCategories.map(category => (
               <TabsTrigger 
                 key={category.type} 
