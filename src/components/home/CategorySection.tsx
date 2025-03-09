@@ -1,14 +1,13 @@
-
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
 import { 
   ArrowRight, Book, Film, Tv, Utensils, Store, Headphones, HelpCircle, Plus,
-  PlaneTakeoff, MapPin, Music, Building, Gift, Newspaper, Binoculars
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
 import { AddCategoryDialog } from '@/components/categories/AddCategoryDialog';
+import { getIconComponent } from '@/components/categories/CategoryIconSelector';
 
 interface CategorySectionProps {
   customCategories: CustomCategory[];
@@ -34,30 +33,6 @@ const CategorySection = ({
     { type: RecommendationType.RESTAURANT, label: 'Restaurants', icon: Store as LucideIcon, color: 'bg-amber-50' },
     { type: RecommendationType.PODCAST, label: 'Podcasts', icon: Headphones as LucideIcon, color: 'bg-blue-100' },
   ];
-  
-  // Get the corresponding Lucide icon component based on the icon name
-  const getIconComponent = (iconName: string): LucideIcon => {
-    switch (iconName) {
-      // Standard category icons
-      case 'Book': return Book;
-      case 'Film': return Film;
-      case 'Tv': return Tv;
-      case 'Utensils': return Utensils;
-      case 'Store': return Store;
-      case 'Headphones': return Headphones;
-      
-      // New category icons
-      case 'PlaneTakeoff': return PlaneTakeoff;
-      case 'MapPin': return MapPin;
-      case 'Music': return Music;
-      case 'Building': return Building;
-      case 'Gift': return Gift;
-      case 'Newspaper': return Newspaper;
-      case 'Binoculars': return Binoculars;
-      
-      default: return HelpCircle;
-    }
-  };
   
   const categories = [
     ...defaultCategories,
@@ -100,7 +75,6 @@ const CategorySection = ({
           </Card>
         ))}
         
-        {/* Add Category Card */}
         <Card 
           className="cursor-pointer transition-all duration-300 transform hover:-translate-y-1 hover:shadow-md border-dashed"
           onClick={() => setIsAddCategoryOpen(true)}
