@@ -2,8 +2,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType } from '@/utils/types';
-import { getRecommendations } from '@/utils/localStorage';
+import { mockRecommendations } from '@/utils/mockData';
 import RecommendationCard from '@/components/RecommendationCard';
+import CategoryTag from '@/components/CategoryTag';
 import { ArrowRight, Book, Film, Tv, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,18 +20,15 @@ const Index = () => {
     { type: RecommendationType.RECIPE, label: 'Recipes', icon: Utensils, color: 'bg-green-50' },
   ];
   
-  // Get recommendations from localStorage instead of mock data
-  const allRecommendations = getRecommendations();
-  
   // Filter recommendations by active tab
-  const filteredRecommendations = allRecommendations
+  const filteredRecommendations = mockRecommendations
     .filter(rec => rec.type === activeTab)
     .slice(0, 3);
     
   // Count recommendations by type
   const recommendationCounts = categories.map(category => ({
     ...category,
-    count: allRecommendations.filter(rec => rec.type === category.type).length
+    count: mockRecommendations.filter(rec => rec.type === category.type).length
   }));
   
   // Staggered animation for cards

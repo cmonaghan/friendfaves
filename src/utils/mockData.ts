@@ -1,5 +1,6 @@
 
 import { Person, Recommendation, RecommendationType } from './types';
+import { getRecommendations, getPeople, getRecommendationById, initializeLocalStorage } from './localStorage';
 
 // Original mock data - used to seed localStorage on first load
 export const mockPeople: Person[] = [
@@ -78,3 +79,16 @@ export const mockRecommendations: Recommendation[] = [
     isCompleted: false
   }
 ];
+
+// Initialize localStorage with mock data if empty
+initializeLocalStorage();
+
+// These functions now use the localStorage versions
+export const getRecommendationsByType = (type: RecommendationType) => {
+  return getRecommendations().filter(rec => rec.type === type);
+};
+
+export { getRecommendationById };
+
+// Export the functions to get data from localStorage
+export { getRecommendations, getPeople };
