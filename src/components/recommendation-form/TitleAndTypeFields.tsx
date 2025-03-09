@@ -110,8 +110,8 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
         open={showAddCategoryDialog} 
         onOpenChange={(open) => {
           setShowAddCategoryDialog(open);
-          // If dialog is closed and no category was selected, reset to default
-          if (!open && !form.getValues("type")) {
+          // If dialog is closed without a category being created, reset to default
+          if (!open && form.getValues("type") === RecommendationType.OTHER) {
             form.setValue("type", RecommendationType.BOOK, {
               shouldValidate: false
             });
