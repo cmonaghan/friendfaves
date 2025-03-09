@@ -1,7 +1,6 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { mockRecommendations } from '@/utils/mockData';
+import { getRecommendations } from '@/utils/localStorage';
 import RecommendationCard from '@/components/RecommendationCard';
 import { RecommendationType } from '@/utils/types';
 import { useStaggeredAnimation } from '@/utils/animations';
@@ -32,6 +31,12 @@ const RecommendationList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showCompleted, setShowCompleted] = useState(true);
+  const [recommendations, setRecommendations] = useState([]);
+  
+  // Fetch recommendations from localStorage
+  useEffect(() => {
+    setRecommendations(getRecommendations());
+  }, []);
   
   // Update URL when tab changes
   useEffect(() => {
@@ -44,7 +49,7 @@ const RecommendationList = () => {
   }, [activeTab, searchParams, setSearchParams]);
   
   // Filter recommendations
-  const filteredRecommendations = mockRecommendations
+  const filteredRecommendations = recommendations
     .filter(rec => {
       // Filter by type
       if (activeTab !== 'all' && rec.type !== activeTab) {

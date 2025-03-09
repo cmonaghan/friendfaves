@@ -1,13 +1,13 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RecommendationType } from "@/utils/types";
-import { mockPeople } from "@/utils/mockData";
+import { RecommendationType, Person } from "@/utils/types";
+import { getPeople, addRecommendation, addPerson } from "@/utils/localStorage";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   Form,
@@ -63,17 +63,37 @@ const AddRecommendationForm = () => {
     setIsSubmitting(true);
     
     try {
-      // This is where we would normally submit to an API
+      let recommender: Person;
+      
       if (isAddingNewFriend && data.newFriendName) {
-        console.log("Adding new friend:", data.newFriendName);
-        // In a real app, we would add the new friend to the database
-        // and then use the new friend's ID for the recommendation
+        const newPerson: Person = {
+          id: uuidv4(),
+          name: data.newFriendName,
+          avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
+        };
+        
+        addPerson(newPerson);
+        recommender = newPerson;
+        console.log("Added new friend:", newPerson);
+      } else {
+        const people = getPeople();
+        recommender = people.find(p => p.id === data.recommenderId)!;
       }
       
-      console.log("Form submitted:", data);
+      const newRecommendation = {
+        id: uuidv4(),
+        title: data.title,
+        type: data.type,
+        recommender: recommender,
+        reason: data.reason,
+        notes: data.notes || undefined,
+        source: data.source || undefined,
+        date: new Date().toISOString().split('T')[0],
+        isCompleted: false
+      };
       
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      addRecommendation(newRecommendation);
+      console.log("Added recommendation:", newRecommendation);
       
       toast.success("Recommendation added successfully!");
       navigate("/recommendations");
@@ -94,6 +114,8 @@ const AddRecommendationForm = () => {
       form.setValue("recommenderId", value);
     }
   };
+
+  const people = getPeople();
 
   return (
     <Card className="w-full max-w-lg mx-auto shadow-sm">
@@ -162,7 +184,7 @@ const AddRecommendationForm = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {mockPeople.map((person) => (
+                        {people.map((person) => (
                           <SelectItem key={person.id} value={person.id}>
                             {person.name}
                           </SelectItem>
