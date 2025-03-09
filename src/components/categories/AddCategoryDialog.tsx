@@ -112,6 +112,3 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
     </Dialog>
   );
 }
-
-// Import at the end to avoid circular dependencies
-import { colorOptions } from './types';
