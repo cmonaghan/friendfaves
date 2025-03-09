@@ -9,9 +9,6 @@ const HeroSection = () => {
   return (
     <section className="mb-12 py-12 sm:py-16 px-4">
       <div className="max-w-3xl mx-auto text-center">
-        <span className="inline-block mb-4 px-3 py-1 bg-secondary text-sm font-medium rounded-full">
-          Never Forget a Good Recommendation
-        </span>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
           Track <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">recommendations</span> from friends
         </h1>
