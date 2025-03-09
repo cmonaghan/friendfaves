@@ -1,6 +1,8 @@
 
 import { Person, Recommendation, RecommendationType } from './types';
 import { dbConfig } from './storageConfig';
+import { supabase } from '@/integrations/supabase/client';
+import { mockPeople, mockRecommendations } from './mockData';
 
 // In a real implementation, this would use an actual database
 // For now, we'll simulate a database with in-memory storage to demonstrate the concept
@@ -20,18 +22,23 @@ const initializeDatabaseStorage = async (): Promise<void> => {
   });
   
   try {
-    // In a real implementation, this would establish a database connection
-    // Example with a real database client:
-    // const client = new DatabaseClient({
-    //   host: dbConfig.host,
-    //   port: dbConfig.port,
-    //   user: dbConfig.user,
-    //   password: dbConfig.password,
-    //   database: dbConfig.database
-    // });
-    // await client.connect();
+    // Check if we have an active session
+    const { data: sessionData } = await supabase.auth.getSession();
+    const session = sessionData?.session;
     
-    // For this simulation, we'll just mark as initialized
+    if (session) {
+      console.log('User is authenticated, will use real database data');
+      // In a real implementation, this would connect to a real database
+      // For this example, we'll use an empty store to simulate user-specific data
+      recommendationsStore = [];
+      peopleStore = [];
+    } else {
+      console.log('User is NOT authenticated, will use mock data');
+      // Use mock data for unauthenticated users
+      recommendationsStore = [...mockRecommendations];
+      peopleStore = [...mockPeople];
+    }
+    
     initialized = true;
     console.log('Database connection established successfully');
   } catch (error) {
@@ -42,97 +49,155 @@ const initializeDatabaseStorage = async (): Promise<void> => {
 
 const getRecommendations = async (): Promise<Recommendation[]> => {
   await initializeDatabaseStorage();
-  console.log('Fetching recommendations from database');
   
-  // In a real implementation, this would be:
-  // const result = await dbClient.query('SELECT * FROM recommendations');
-  // return result.rows;
+  // Get the current session
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
   
-  return [...recommendationsStore];
+  if (session) {
+    console.log('Fetching user-specific recommendations from database');
+    // In a real implementation, this would query the database for user-specific data
+    // For this example, we're using the in-memory store which would be empty for authenticated users
+    return [...recommendationsStore];
+  } else {
+    console.log('Fetching mock recommendations for unauthenticated user');
+    // Return mock data for unauthenticated users
+    return [...mockRecommendations];
+  }
 };
 
 const getRecommendationById = async (id: string): Promise<Recommendation | undefined> => {
   await initializeDatabaseStorage();
-  console.log(`Fetching recommendation with ID ${id} from database`);
   
-  // In a real implementation, this would be:
-  // const result = await dbClient.query('SELECT * FROM recommendations WHERE id = $1', [id]);
-  // return result.rows[0];
+  // Get the current session
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
   
-  return recommendationsStore.find(rec => rec.id === id);
+  if (session) {
+    console.log(`Fetching user-specific recommendation with ID ${id} from database`);
+    return recommendationsStore.find(rec => rec.id === id);
+  } else {
+    console.log(`Fetching mock recommendation with ID ${id} for unauthenticated user`);
+    return mockRecommendations.find(rec => rec.id === id);
+  }
 };
 
 const getRecommendationsByType = async (type: RecommendationType): Promise<Recommendation[]> => {
   await initializeDatabaseStorage();
-  console.log(`Fetching recommendations of type ${type} from database`);
   
-  // In a real implementation, this would be:
-  // const result = await dbClient.query('SELECT * FROM recommendations WHERE type = $1', [type]);
-  // return result.rows;
+  // Get the current session
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
   
-  return recommendationsStore.filter(rec => rec.type === type);
+  if (session) {
+    console.log(`Fetching user-specific recommendations of type ${type} from database`);
+    return recommendationsStore.filter(rec => rec.type === type);
+  } else {
+    console.log(`Fetching mock recommendations of type ${type} for unauthenticated user`);
+    return mockRecommendations.filter(rec => rec.type === type);
+  }
 };
 
 const addRecommendation = async (recommendation: Recommendation): Promise<void> => {
   await initializeDatabaseStorage();
   
-  // In a real implementation, this would be:
-  // await dbClient.query(
-  //   'INSERT INTO recommendations (id, title, type, recommender_id, reason, notes, source, date, is_completed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-  //   [recommendation.id, recommendation.title, recommendation.type, recommendation.recommender.id, recommendation.reason, recommendation.notes, recommendation.source, recommendation.date, recommendation.isCompleted]
-  // );
+  // Get the current session
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
   
-  recommendationsStore.push(recommendation);
-  console.log('Added recommendation to database', recommendation.id);
+  if (session) {
+    console.log('Adding user-specific recommendation to database');
+    // In a real implementation, this would insert into a real database
+    // For this simulation, we'll just add to our in-memory store
+    recommendationsStore.push(recommendation);
+  } else {
+    console.log('Adding mock recommendation for unauthenticated user');
+    mockRecommendations.push(recommendation);
+  }
+  
+  console.log('Added recommendation', recommendation.id);
 };
 
 const getPeople = async (): Promise<Person[]> => {
   await initializeDatabaseStorage();
-  console.log('Fetching people from database');
   
-  // In a real implementation, this would be:
-  // const result = await dbClient.query('SELECT * FROM people');
-  // return result.rows;
+  // Get the current session
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
   
-  return [...peopleStore];
+  if (session) {
+    console.log('Fetching user-specific people from database');
+    return [...peopleStore];
+  } else {
+    console.log('Fetching mock people for unauthenticated user');
+    return [...mockPeople];
+  }
 };
 
 const addPerson = async (person: Person): Promise<Person> => {
   await initializeDatabaseStorage();
   
-  // In a real implementation, this would be:
-  // await dbClient.query('INSERT INTO people (id, name, avatar) VALUES ($1, $2, $3)', [person.id, person.name, person.avatar]);
+  // Get the current session
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
   
-  peopleStore.push(person);
-  console.log('Added person to database', person.id);
+  if (session) {
+    console.log('Adding user-specific person to database');
+    peopleStore.push(person);
+  } else {
+    console.log('Adding mock person for unauthenticated user');
+    mockPeople.push(person);
+  }
+  
+  console.log('Added person', person.id);
   return person;
 };
 
 const updateRecommendation = async (updatedRec: Recommendation): Promise<void> => {
   await initializeDatabaseStorage();
   
-  // In a real implementation, this would be:
-  // await dbClient.query(
-  //   'UPDATE recommendations SET title = $1, type = $2, recommender_id = $3, reason = $4, notes = $5, source = $6, is_completed = $7 WHERE id = $8',
-  //   [updatedRec.title, updatedRec.type, updatedRec.recommender.id, updatedRec.reason, updatedRec.notes, updatedRec.source, updatedRec.isCompleted, updatedRec.id]
-  // );
+  // Get the current session
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
   
-  const index = recommendationsStore.findIndex(rec => rec.id === updatedRec.id);
-  
-  if (index !== -1) {
-    recommendationsStore[index] = updatedRec;
-    console.log('Updated recommendation in database', updatedRec.id);
+  if (session) {
+    console.log('Updating user-specific recommendation in database');
+    const index = recommendationsStore.findIndex(rec => rec.id === updatedRec.id);
+    
+    if (index !== -1) {
+      recommendationsStore[index] = updatedRec;
+      console.log('Updated recommendation', updatedRec.id);
+    }
+  } else {
+    console.log('Updating mock recommendation for unauthenticated user');
+    const index = mockRecommendations.findIndex(rec => rec.id === updatedRec.id);
+    
+    if (index !== -1) {
+      mockRecommendations[index] = updatedRec;
+      console.log('Updated recommendation', updatedRec.id);
+    }
   }
 };
 
 const deleteRecommendation = async (id: string): Promise<void> => {
   await initializeDatabaseStorage();
   
-  // In a real implementation, this would be:
-  // await dbClient.query('DELETE FROM recommendations WHERE id = $1', [id]);
+  // Get the current session
+  const { data: sessionData } = await supabase.auth.getSession();
+  const session = sessionData?.session;
   
-  recommendationsStore = recommendationsStore.filter(rec => rec.id !== id);
-  console.log('Deleted recommendation from database', id);
+  if (session) {
+    console.log('Deleting user-specific recommendation from database');
+    recommendationsStore = recommendationsStore.filter(rec => rec.id !== id);
+  } else {
+    console.log('Deleting mock recommendation for unauthenticated user');
+    const mockIndex = mockRecommendations.findIndex(rec => rec.id === id);
+    if (mockIndex !== -1) {
+      mockRecommendations.splice(mockIndex, 1);
+    }
+  }
+  
+  console.log('Deleted recommendation', id);
 };
 
 export {

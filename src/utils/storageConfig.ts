@@ -19,3 +19,8 @@ export const dbConfig = {
 
 // The current storage provider based on demo mode
 export const currentStorageProvider = isDemo ? StorageProvider.LOCAL_STORAGE : StorageProvider.DATABASE;
+
+// Get current auth state - whether a user is logged in or not
+export const getIsAuthenticated = () => {
+  return !!localStorage.getItem('supabase.auth.token');
+};

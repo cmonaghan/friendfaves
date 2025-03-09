@@ -2,16 +2,35 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType } from '@/utils/types';
-import { mockRecommendations } from '@/utils/mockData';
 import RecommendationCard from '@/components/RecommendationCard';
-import CategoryTag from '@/components/CategoryTag';
 import { ArrowRight, Book, Film, Tv, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthProvider';
+import { getRecommendations } from '@/utils/storage';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<RecommendationType>(RecommendationType.BOOK);
   const categoryRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Fetch recommendations when component mounts
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        const data = await getRecommendations();
+        setRecommendations(data);
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchRecommendations();
+  }, [user]); // Re-fetch when user changes
   
   const categories = [
     { type: RecommendationType.BOOK, label: 'Books', icon: Book, color: 'bg-blue-50' },
@@ -21,14 +40,14 @@ const Index = () => {
   ];
   
   // Filter recommendations by active tab
-  const filteredRecommendations = mockRecommendations
+  const filteredRecommendations = recommendations
     .filter(rec => rec.type === activeTab)
     .slice(0, 3);
     
   // Count recommendations by type
   const recommendationCounts = categories.map(category => ({
     ...category,
-    count: mockRecommendations.filter(rec => rec.type === category.type).length
+    count: recommendations.filter(rec => rec.type === category.type).length
   }));
   
   // Staggered animation for cards
@@ -45,6 +64,16 @@ const Index = () => {
       }, 100 + index * 100);
     });
   }, [activeTab]);
+
+  if (loading) {
+    return (
+      <div className="max-w-screen-xl mx-auto">
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <div className="animate-pulse">Loading recommendations...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-screen-xl mx-auto">
@@ -147,7 +176,9 @@ const Index = () => {
             ))
           ) : (
             <div className="col-span-full py-12 text-center">
-              <p className="text-muted-foreground">No {activeTab} recommendations yet.</p>
+              <p className="text-muted-foreground">
+                {user ? 'No recommendations yet. Add your first one!' : 'No recommendations found for this category.'}
+              </p>
               <Button asChild variant="outline" className="mt-4">
                 <Link to="/add">Add your first {activeTab} recommendation</Link>
               </Button>
