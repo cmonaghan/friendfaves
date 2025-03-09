@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
 import { ArrowRight, Book, Film, Tv, Utensils, Store, Headphones, HelpCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { LucideIcon } from 'lucide-react';
 
 interface CategorySectionProps {
   customCategories: CustomCategory[];
@@ -21,12 +22,12 @@ const CategorySection = ({
   const categoryRef = useRef<HTMLDivElement>(null);
   
   const defaultCategories = [
-    { type: RecommendationType.BOOK, label: 'Books', icon: Book, color: 'bg-blue-50' },
-    { type: RecommendationType.MOVIE, label: 'Movies', icon: Film, color: 'bg-purple-50' },
-    { type: RecommendationType.TV, label: 'TV Shows', icon: Tv, color: 'bg-pink-50' },
-    { type: RecommendationType.RECIPE, label: 'Recipes', icon: Utensils, color: 'bg-green-50' },
-    { type: RecommendationType.RESTAURANT, label: 'Restaurants', icon: Store, color: 'bg-amber-50' },
-    { type: RecommendationType.PODCAST, label: 'Podcasts', icon: Headphones, color: 'bg-blue-100' },
+    { type: RecommendationType.BOOK, label: 'Books', icon: Book as LucideIcon, color: 'bg-blue-50' },
+    { type: RecommendationType.MOVIE, label: 'Movies', icon: Film as LucideIcon, color: 'bg-purple-50' },
+    { type: RecommendationType.TV, label: 'TV Shows', icon: Tv as LucideIcon, color: 'bg-pink-50' },
+    { type: RecommendationType.RECIPE, label: 'Recipes', icon: Utensils as LucideIcon, color: 'bg-green-50' },
+    { type: RecommendationType.RESTAURANT, label: 'Restaurants', icon: Store as LucideIcon, color: 'bg-amber-50' },
+    { type: RecommendationType.PODCAST, label: 'Podcasts', icon: Headphones as LucideIcon, color: 'bg-blue-100' },
   ];
   
   const categories = [
@@ -34,7 +35,7 @@ const CategorySection = ({
     ...customCategories.map(cat => ({
       type: cat.type,
       label: cat.label,
-      icon: HelpCircle,
+      icon: HelpCircle as LucideIcon,
       color: cat.color || 'bg-gray-50'
     }))
   ];

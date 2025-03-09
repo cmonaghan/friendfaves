@@ -1,10 +1,11 @@
 
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Recommendation, RecommendationType, CustomCategory } from '@/utils/types';
+import { Recommendation, RecommendationType } from '@/utils/types';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import RecommendationCard from '@/components/RecommendationCard';
+import { LucideIcon } from 'lucide-react';
 
 interface RecommendationsSectionProps {
   recommendations: Recommendation[];
@@ -13,7 +14,7 @@ interface RecommendationsSectionProps {
   categories: Array<{
     type: RecommendationType | string;
     label: string;
-    icon: React.FC<{ size?: number }>;
+    icon: LucideIcon;
     color: string;
   }>;
   filteredRecommendations: Recommendation[];
