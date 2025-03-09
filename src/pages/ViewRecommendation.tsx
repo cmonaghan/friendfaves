@@ -2,7 +2,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CheckCircle2, Pencil, Trash2, Calendar } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Pencil, Trash2, Calendar, MapPin } from 'lucide-react';
 import { 
   Dialog,
   DialogContent,
@@ -137,37 +137,40 @@ const ViewRecommendation = () => {
   });
   
   return (
-    <div className="max-w-4xl mx-auto pb-12 pt-4">
-      <div className="mb-6 flex items-center gap-2">
-        <Button variant="ghost" size="icon" asChild className="rounded-full">
-          <Link to="/recommendations">
-            <ArrowLeft size={20} />
+    <div className="max-w-3xl mx-auto pb-12 pt-6 px-4">
+      {/* Back button */}
+      <div className="mb-6">
+        <Button variant="ghost" size="sm" asChild className="pl-0 hover:bg-transparent">
+          <Link to="/recommendations" className="flex items-center gap-2 text-base">
+            <ArrowLeft size={18} />
+            <span>Back</span>
           </Link>
         </Button>
-        <span className="font-bold text-xl">Back</span>
       </div>
       
+      {/* Action buttons */}
       <div className="flex justify-end gap-2 mb-6">
         <Button 
-          variant="default" 
-          className="rounded-full shadow gap-2"
+          variant={recommendation.isCompleted ? "outline" : "default"}
+          size="sm"
+          className="rounded-full"
           onClick={handleToggleComplete}
         >
-          <CheckCircle2 size={18} />
+          <CheckCircle2 size={16} className="mr-1.5" />
           {recommendation.isCompleted ? "Mark Incomplete" : "Mark Complete"}
         </Button>
         
-        <Button variant="outline" className="rounded-full shadow gap-2" asChild>
+        <Button variant="outline" size="sm" className="rounded-full" asChild>
           <Link to={`/recommendation/${recommendation.id}/edit`}>
-            <Pencil size={18} />
+            <Pencil size={16} className="mr-1.5" />
             Edit
           </Link>
         </Button>
         
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="destructive" className="rounded-full shadow gap-2">
-              <Trash2 size={18} />
+            <Button variant="destructive" size="sm" className="rounded-full">
+              <Trash2 size={16} className="mr-1.5" />
               Delete
             </Button>
           </DialogTrigger>
@@ -190,43 +193,59 @@ const ViewRecommendation = () => {
         </Dialog>
       </div>
       
-      <div className="bg-white dark:bg-card border rounded-lg shadow-sm overflow-hidden">
-        <div className="p-6 border-b">
-          <div className="mb-4">
+      {/* Content card */}
+      <div className="bg-white dark:bg-card rounded-lg shadow-sm overflow-hidden border">
+        {/* Header section */}
+        <div className="p-8 pb-6">
+          <div className="flex gap-2 mb-3">
             <CategoryTag type={recommendation.type} customCategory={recommendation.customCategory} />
+            {recommendation.isCompleted && (
+              <div className="inline-flex items-center rounded-full py-1 px-2.5 gap-1.5 bg-green-100 text-green-700">
+                <CheckCircle2 size={16} />
+                <span className="font-medium text-sm">Completed</span>
+              </div>
+            )}
           </div>
           
-          <h1 className="text-3xl font-bold mb-3">{recommendation.title}</h1>
+          <h1 className="text-3xl font-bold mb-4">{recommendation.title}</h1>
           
-          <div className="text-muted-foreground flex items-center">
+          <div className="flex items-center text-muted-foreground text-sm">
             <Calendar size={16} className="mr-2" />
-            {formattedDate}
+            <span>{formattedDate}</span>
+            
+            {recommendation.source && (
+              <>
+                <span className="mx-2">•</span>
+                <MapPin size={16} className="mr-2" />
+                <span>{recommendation.source}</span>
+              </>
+            )}
           </div>
         </div>
         
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-semibold mb-4">Why They Recommended It</h2>
-          <blockquote className="pl-4 py-2 border-l-4 border-muted-foreground/30 italic text-muted-foreground">
-            "{recommendation.reason || 'No reason provided'}"
-          </blockquote>
-        </div>
+        {/* Divider */}
+        <div className="h-px bg-border" />
         
-        {recommendation.source && (
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold mb-4">Additional Notes</h2>
-            <p>{recommendation.source}</p>
+        {/* Content section */}
+        <div className="flex flex-col lg:flex-row">
+          {/* Reason section */}
+          <div className="p-8 flex-1">
+            <h2 className="text-lg font-semibold mb-3">Why They Recommended It</h2>
+            <div className="bg-gray-50 dark:bg-secondary/50 p-4 rounded-md text-muted-foreground italic">
+              "{recommendation.reason || 'No reason provided'}"
+            </div>
           </div>
-        )}
-        
-        <div className="p-6 flex items-center justify-end">
-          <div className="text-right mr-3">
-            <h2 className="text-xl font-semibold">Recommended By</h2>
+          
+          {/* Recommender section */}
+          <div className="bg-gray-50 dark:bg-secondary/50 p-8 flex-shrink-0 lg:w-1/3 flex flex-col justify-center items-center">
+            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Recommended By</h3>
+            <Avatar 
+              person={recommendation.recommender} 
+              size="lg" 
+              showName={true} 
+              className="flex-col gap-2"
+            />
           </div>
-          <Avatar 
-            person={recommendation.recommender} 
-            size="lg" 
-            showName={true} 
-          />
         </div>
       </div>
     </div>

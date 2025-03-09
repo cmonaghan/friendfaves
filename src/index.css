@@ -130,3 +130,12 @@
 .overflow-x-auto.bg-secondary .bg-secondary {
   background: transparent;
 }
+
+/* Recommendation detail page styles */
+.flex-col > .avatar-wrapper {
+  @apply flex-col text-center;
+}
+
+.flex-col > .avatar-wrapper > span {
+  @apply ml-0 mt-2;
+}
