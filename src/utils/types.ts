@@ -13,6 +13,11 @@ export interface Person {
   avatar?: string;
 }
 
+export interface NewPerson {
+  name: string;
+  avatar?: string;
+}
+
 export interface Recommendation {
   id: string;
   title: string;

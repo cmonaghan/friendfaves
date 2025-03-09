@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RecommendationType } from "@/utils/types";
 import { mockPeople } from "@/utils/mockData";
 import { toast } from "sonner";
+import { UserPlus } from "lucide-react";
 
 import {
   Form,
@@ -32,6 +33,7 @@ const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters" }),
   type: z.nativeEnum(RecommendationType),
   recommenderId: z.string().min(1, { message: "Please select who recommended this" }),
+  newFriendName: z.string().optional(),
   reason: z.string().min(5, { message: "Please add why they recommended it" }),
   notes: z.string().optional(),
   source: z.string().optional(),
@@ -41,6 +43,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const AddRecommendationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAddingNewFriend, setIsAddingNewFriend] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<FormValues>({
@@ -49,6 +52,7 @@ const AddRecommendationForm = () => {
       title: "",
       type: RecommendationType.BOOK,
       recommenderId: "",
+      newFriendName: "",
       reason: "",
       notes: "",
       source: "",
@@ -60,6 +64,12 @@ const AddRecommendationForm = () => {
     
     try {
       // This is where we would normally submit to an API
+      if (isAddingNewFriend && data.newFriendName) {
+        console.log("Adding new friend:", data.newFriendName);
+        // In a real app, we would add the new friend to the database
+        // and then use the new friend's ID for the recommendation
+      }
+      
       console.log("Form submitted:", data);
       
       // Simulate API call
@@ -72,6 +82,16 @@ const AddRecommendationForm = () => {
       console.error("Error submitting form:", error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleRecommenderChange = (value: string) => {
+    if (value === "new") {
+      setIsAddingNewFriend(true);
+      form.setValue("recommenderId", "new");
+    } else {
+      setIsAddingNewFriend(false);
+      form.setValue("recommenderId", value);
     }
   };
 
@@ -133,7 +153,7 @@ const AddRecommendationForm = () => {
                   <FormItem>
                     <FormLabel>Recommended By</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={handleRecommenderChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
@@ -147,6 +167,12 @@ const AddRecommendationForm = () => {
                             {person.name}
                           </SelectItem>
                         ))}
+                        <SelectItem value="new" className="text-primary">
+                          <div className="flex items-center gap-2">
+                            <UserPlus className="h-4 w-4" />
+                            <span>Add new friend</span>
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -154,6 +180,22 @@ const AddRecommendationForm = () => {
                 )}
               />
             </div>
+
+            {isAddingNewFriend && (
+              <FormField
+                control={form.control}
+                name="newFriendName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New Friend's Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter their name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
