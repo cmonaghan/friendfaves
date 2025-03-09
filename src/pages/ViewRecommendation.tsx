@@ -138,61 +138,64 @@ const ViewRecommendation = () => {
   
   return (
     <div className="max-w-4xl mx-auto pb-12 pt-4">
-      <div className="mb-6 flex items-center gap-2">
-        <Button variant="ghost" size="icon" asChild className="rounded-full">
+      {/* Back button and actions */}
+      <div className="mb-5 flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="rounded-full flex items-center gap-1 pl-0 hover:pl-2 transition-all">
           <Link to="/recommendations">
-            <ArrowLeft size={20} />
-          </Link>
-        </Button>
-        <span className="font-bold text-xl">Back</span>
-      </div>
-      
-      <div className="flex justify-end gap-2 mb-6">
-        <Button 
-          variant="default" 
-          className="rounded-full shadow gap-2"
-          onClick={handleToggleComplete}
-        >
-          <CheckCircle2 size={18} />
-          {recommendation.isCompleted ? "Mark Incomplete" : "Mark Complete"}
-        </Button>
-        
-        <Button variant="outline" className="rounded-full shadow gap-2" asChild>
-          <Link to={`/recommendation/${recommendation.id}/edit`}>
-            <Pencil size={18} />
-            Edit
+            <ArrowLeft size={18} />
+            <span className="font-medium">Back</span>
           </Link>
         </Button>
         
-        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="destructive" className="rounded-full shadow gap-2">
-              <Trash2 size={18} />
-              Delete
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Delete Recommendation</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete "{recommendation.title}"? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                Cancel
+        <div className="flex gap-2">
+          <Button 
+            variant="default" 
+            className="rounded-full shadow-sm gap-1.5"
+            onClick={handleToggleComplete}
+          >
+            <CheckCircle2 size={18} />
+            {recommendation.isCompleted ? "Mark Incomplete" : "Mark Complete"}
+          </Button>
+          
+          <Button variant="outline" className="rounded-full shadow-sm gap-1.5" asChild>
+            <Link to={`/recommendation/${recommendation.id}/edit`}>
+              <Pencil size={18} />
+              Edit
+            </Link>
+          </Button>
+          
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive" className="rounded-full shadow-sm gap-1.5">
+                <Trash2 size={18} />
+                Delete
               </Button>
-              <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                {isDeleting ? <LoadingSpinner size={16} /> : "Delete"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Recommendation</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete "{recommendation.title}"? This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                  {isDeleting ? <LoadingSpinner size={16} /> : "Delete"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       
-      <div className="bg-white dark:bg-card border rounded-lg shadow-sm overflow-hidden">
-        <div className="p-6 border-b">
-          <div className="mb-4">
+      {/* Recommendation card */}
+      <div className="bg-white dark:bg-card rounded-lg shadow-sm overflow-hidden border">
+        {/* Header section with title and date */}
+        <div className="recommendation-section header">
+          <div className="mb-3">
             <CategoryTag type={recommendation.type} customCategory={recommendation.customCategory} />
           </div>
           
@@ -204,29 +207,34 @@ const ViewRecommendation = () => {
           </div>
         </div>
         
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-semibold mb-4">Why They Recommended It</h2>
-          <blockquote className="pl-4 py-2 border-l-4 border-muted-foreground/30 italic text-muted-foreground">
-            "{recommendation.reason || 'No reason provided'}"
-          </blockquote>
+        <div className="recommendation-section content">
+          {/* Why section */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-3">Why They Recommended It</h2>
+            <blockquote className="quote-background italic text-muted-foreground">
+              "{recommendation.reason || 'No reason provided'}"
+            </blockquote>
+          </div>
+          
+          {/* Additional notes section */}
+          {recommendation.source && (
+            <div>
+              <h2 className="text-xl font-semibold mb-3">Additional Notes</h2>
+              <p className="text-muted-foreground">{recommendation.source}</p>
+            </div>
+          )}
         </div>
         
-        {recommendation.source && (
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold mb-4">Additional Notes</h2>
-            <p>{recommendation.source}</p>
+        {/* Recommended by section */}
+        <div className="recommendation-by border-t px-6">
+          <h2 className="text-lg font-semibold">Recommended By</h2>
+          <div className="avatar-container">
+            <Avatar 
+              person={recommendation.recommender} 
+              size="lg" 
+              showName={true} 
+            />
           </div>
-        )}
-        
-        <div className="p-6 flex items-center justify-end">
-          <div className="text-right mr-3">
-            <h2 className="text-xl font-semibold">Recommended By</h2>
-          </div>
-          <Avatar 
-            person={recommendation.recommender} 
-            size="lg" 
-            showName={true} 
-          />
         </div>
       </div>
     </div>

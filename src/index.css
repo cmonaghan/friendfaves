@@ -105,3 +105,34 @@
   transform: translateY(-10px);
   transition: opacity 300ms, transform 300ms;
 }
+
+/* Recommendation details page styling */
+.recommendation-section {
+  @apply py-6 px-6;
+}
+
+.recommendation-section.header {
+  @apply pb-6 border-b border-gray-200;
+}
+
+.recommendation-section.content {
+  @apply py-7;
+}
+
+.quote-background {
+  @apply bg-secondary rounded-lg py-5 px-6;
+}
+
+.recommendation-by {
+  @apply flex items-center justify-between py-6;
+}
+
+@media (max-width: 640px) {
+  .recommendation-by {
+    @apply flex-col items-start gap-4;
+  }
+  
+  .recommendation-by .avatar-container {
+    @apply w-full flex justify-start;
+  }
+}
