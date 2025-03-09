@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from "sonner";
 import { Recommendation } from '@/utils/types';
-import { getRecommendationById } from '@/utils/mockData';
+import { getRecommendationById, toggleRecommendationCompletion, deleteRecommendation } from '@/utils/localStorage';
 import { Button } from '@/components/ui/button';
 import { 
   ArrowLeft, 
@@ -37,7 +36,7 @@ const RecommendationDetail = () => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // In a real app, we would fetch from API
+    // Fetch from localStorage
     const fetchRecommendation = async () => {
       try {
         if (!id) return navigate('/not-found');
@@ -60,20 +59,30 @@ const RecommendationDetail = () => {
   }, [id, navigate]);
   
   const handleToggleComplete = () => {
-    if (!recommendation) return;
+    if (!recommendation || !id) return;
     
-    setIsCompleted(!isCompleted);
-    toast.success(
-      isCompleted 
-        ? 'Marked as not completed' 
-        : 'Marked as completed!'
-    );
+    const updated = toggleRecommendationCompletion(id);
+    if (updated) {
+      setIsCompleted(updated.isCompleted);
+      setRecommendation(updated);
+      toast.success(
+        updated.isCompleted 
+          ? 'Marked as completed!' 
+          : 'Marked as not completed'
+      );
+    }
   };
   
   const handleDelete = () => {
-    // In a real app, we would call API to delete
-    toast.success('Recommendation deleted');
-    navigate('/recommendations');
+    if (!id) return;
+    
+    const deleted = deleteRecommendation(id);
+    if (deleted) {
+      toast.success('Recommendation deleted');
+      navigate('/recommendations');
+    } else {
+      toast.error('Failed to delete recommendation');
+    }
   };
   
   if (loading) {
