@@ -1,5 +1,6 @@
+
 import { useLocation, Link } from "react-router-dom";
-import { Book, Home, LogOut, User } from "lucide-react";
+import { Book, Home, LogOut, User, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -84,6 +85,15 @@ const NavBar = () => {
           </nav>
           
           <div className="flex items-center gap-2">
+            {user && (
+              <Button asChild size="sm" className="mr-2 rounded-full bg-primary hover:bg-primary/90">
+                <Link to="/add" className="flex items-center gap-1.5">
+                  <Plus size={16} />
+                  Add
+                </Link>
+              </Button>
+            )}
+            
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
 import RecommendationCard from '@/components/RecommendationCard';
-import { ArrowRight, Book, Film, Tv, Utensils, Store, Headphones, HelpCircle } from 'lucide-react';
+import { ArrowRight, Book, Film, Tv, Utensils, Store, Headphones, HelpCircle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -175,6 +175,16 @@ const Index = () => {
 
   return (
     <div className="max-w-screen-xl mx-auto">
+      {/* Add Recommendation button at the top */}
+      <div className="mb-8 flex justify-end">
+        <Button asChild size="lg" className="rounded-full bg-primary hover:bg-primary/90">
+          <Link to="/add" className="flex items-center gap-1.5">
+            <Plus size={18} />
+            Add Recommendation
+          </Link>
+        </Button>
+      </div>
+
       {/* Hero section - only show when user is not logged in */}
       {!user && (
         <section className="mb-12 py-12 sm:py-16 px-4">
