@@ -2,7 +2,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CheckCircle2, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Pencil, Trash2, Calendar } from 'lucide-react';
 import { 
   Dialog,
   DialogContent,
@@ -21,8 +21,8 @@ import { useRecommendationById } from '@/hooks/useRecommendationQueries';
 
 // Import the queryKeys for cache invalidation
 import { queryKeys } from '@/hooks/useRecommendationQueries';
-import { CustomCategory } from '@/utils/types';
 import CategoryTag from '@/components/CategoryTag';
+import Avatar from '@/components/Avatar';
 
 const ViewRecommendation = () => {
   const { id } = useParams<{ id: string }>();
@@ -138,26 +138,26 @@ const ViewRecommendation = () => {
   
   return (
     <div className="max-w-4xl mx-auto pb-12 pt-4">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="icon" asChild>
+      <div className="mb-6 flex items-center gap-2">
+        <Button variant="ghost" size="icon" asChild className="rounded-full">
           <Link to="/recommendations">
             <ArrowLeft size={20} />
           </Link>
         </Button>
-        <h1 className="font-bold text-xl">Back</h1>
+        <span className="font-bold text-xl">Back</span>
       </div>
       
-      <div className="flex gap-3 mb-6">
+      <div className="flex justify-end gap-2 mb-6">
         <Button 
-          variant={recommendation.isCompleted ? "outline" : "default"} 
-          className="gap-2"
+          variant="default" 
+          className="rounded-full shadow gap-2"
           onClick={handleToggleComplete}
         >
           <CheckCircle2 size={18} />
           {recommendation.isCompleted ? "Mark Incomplete" : "Mark Complete"}
         </Button>
         
-        <Button variant="outline" className="gap-2" asChild>
+        <Button variant="outline" className="rounded-full shadow gap-2" asChild>
           <Link to={`/recommendation/${recommendation.id}/edit`}>
             <Pencil size={18} />
             Edit
@@ -166,7 +166,7 @@ const ViewRecommendation = () => {
         
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="destructive" className="gap-2">
+            <Button variant="destructive" className="rounded-full shadow gap-2">
               <Trash2 size={18} />
               Delete
             </Button>
@@ -192,52 +192,41 @@ const ViewRecommendation = () => {
       
       <div className="bg-white dark:bg-card border rounded-lg shadow-sm overflow-hidden">
         <div className="p-6 border-b">
-          <div className="mb-3">
+          <div className="mb-4">
             <CategoryTag type={recommendation.type} customCategory={recommendation.customCategory} />
           </div>
           
-          <h1 className="text-3xl font-bold mb-2">{recommendation.title}</h1>
+          <h1 className="text-3xl font-bold mb-3">{recommendation.title}</h1>
           
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center">
+            <Calendar size={16} className="mr-2" />
             {formattedDate}
           </div>
         </div>
         
-        {recommendation.reason && (
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold mb-4">Why They Recommended It</h2>
-            <div className="bg-muted p-4 rounded-md">
-              <p>{recommendation.reason}</p>
-            </div>
-          </div>
-        )}
+        <div className="p-6 border-b">
+          <h2 className="text-xl font-semibold mb-4">Why They Recommended It</h2>
+          <blockquote className="pl-4 py-2 border-l-4 border-muted-foreground/30 italic text-muted-foreground">
+            "{recommendation.reason || 'No reason provided'}"
+          </blockquote>
+        </div>
         
         {recommendation.source && (
           <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold mb-4">Where to Find It</h2>
-            <div className="bg-muted p-4 rounded-md">
-              <p>{recommendation.source}</p>
-            </div>
+            <h2 className="text-xl font-semibold mb-4">Additional Notes</h2>
+            <p>{recommendation.source}</p>
           </div>
         )}
         
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Recommended By</h2>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full overflow-hidden">
-              <img 
-                src={recommendation.recommender.avatar || '/placeholder.svg'} 
-                alt={recommendation.recommender.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <p className="font-medium">{recommendation.recommender.name}</p>
-              {recommendation.recommender.relation && (
-                <p className="text-sm text-muted-foreground">{recommendation.recommender.relation}</p>
-              )}
-            </div>
+        <div className="p-6 flex items-center justify-end">
+          <div className="text-right mr-3">
+            <h2 className="text-xl font-semibold">Recommended By</h2>
           </div>
+          <Avatar 
+            person={recommendation.recommender} 
+            size="lg" 
+            showName={true} 
+          />
         </div>
       </div>
     </div>
