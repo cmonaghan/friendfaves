@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -193,57 +194,57 @@ const ViewRecommendation = () => {
       </div>
       
       {/* Content card */}
-      <div className="bg-white dark:bg-card rounded-lg shadow-sm overflow-hidden border">
+      <div className="bg-card rounded-lg shadow-sm overflow-hidden border">
         {/* Header section */}
-        <div className="p-8 pb-6">
-          <div className="flex gap-2 mb-3">
+        <div className="p-6 sm:p-8 border-b">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
             <CategoryTag type={recommendation.type} customCategory={recommendation.customCategory} />
             {recommendation.isCompleted && (
-              <div className="inline-flex items-center rounded-full py-1 px-2.5 gap-1.5 bg-green-100 text-green-700">
+              <span className="text-green-600 flex items-center gap-1 text-sm px-3 py-1 bg-green-50 rounded-full dark:bg-green-900/20">
                 <CheckCircle2 size={16} />
-                <span className="font-medium text-sm">Completed</span>
-              </div>
+                Completed
+              </span>
             )}
           </div>
           
-          <h1 className="text-3xl font-bold mb-4">{recommendation.title}</h1>
+          <h1 className="text-3xl font-bold mb-3">{recommendation.title}</h1>
           
-          <div className="flex items-center text-muted-foreground text-sm">
-            <Calendar size={16} className="mr-2" />
-            <span>{formattedDate}</span>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar size={16} />
+              <span>{formattedDate}</span>
+            </div>
             
             {recommendation.source && (
-              <>
-                <span className="mx-2">•</span>
-                <MapPin size={16} className="mr-2" />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin size={16} />
                 <span>{recommendation.source}</span>
-              </>
+              </div>
             )}
           </div>
         </div>
         
-        {/* Divider */}
-        <div className="h-px bg-border" />
-        
         {/* Content section */}
-        <div className="flex flex-col lg:flex-row">
-          {/* Reason section */}
-          <div className="p-8 flex-1">
-            <h2 className="text-lg font-semibold mb-3">Why They Recommended It</h2>
-            <div className="bg-gray-50 dark:bg-secondary/50 p-4 rounded-md text-muted-foreground italic">
-              "{recommendation.reason || 'No reason provided'}"
+        <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="md:col-span-3">
+            <div>
+              <h2 className="text-lg font-semibold mb-3">Why They Recommended It</h2>
+              <div className="bg-secondary/50 p-4 rounded-lg">
+                <p className="italic text-muted-foreground">"{recommendation.reason || 'No reason provided'}"</p>
+              </div>
             </div>
           </div>
           
-          {/* Recommender section */}
-          <div className="bg-gray-50 dark:bg-secondary/50 p-8 flex-shrink-0 lg:w-1/3 flex flex-col justify-center items-center">
-            <h3 className="text-sm font-medium mb-3 text-muted-foreground">Recommended By</h3>
-            <Avatar 
-              person={recommendation.recommender} 
-              size="lg" 
-              showName={true} 
-              className="avatar-wrapper-vertical"
-            />
+          <div className="md:col-span-1">
+            <div className="bg-secondary/50 p-4 rounded-lg text-center">
+              <h3 className="text-sm font-medium mb-3">Recommended By</h3>
+              <Avatar 
+                person={recommendation.recommender} 
+                size="lg" 
+                showName={true} 
+                className="avatar-wrapper-vertical"
+              />
+            </div>
           </div>
         </div>
       </div>
