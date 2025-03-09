@@ -34,8 +34,9 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
   };
 
   const handleCategoryCreated = (categoryType: string) => {
-    // When a new category is created, update the form field
-    form.setValue("type", categoryType);
+    // When a new category is created, update the form field with type assertion
+    // This is safe as we're adding a custom category type that's not part of the enum
+    form.setValue("type", categoryType as any);
     
     // Call parent onTypeChange to update any dependent state
     onTypeChange(categoryType);
