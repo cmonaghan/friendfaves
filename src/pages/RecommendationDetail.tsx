@@ -206,11 +206,11 @@ const RecommendationDetail = () => {
           <div className="mb-6 flex items-center">
             <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
               {recommendation.type}
-              {recommendation.customCategory && typeof recommendation.customCategory === 'object' 
-                ? ` › ${recommendation.customCategory.label}` 
-                : recommendation.customCategory 
-                  ? ` › ${recommendation.customCategory}` 
-                  : ''}
+              {recommendation.customCategory !== null && recommendation.customCategory !== undefined && (
+                typeof recommendation.customCategory === 'object' 
+                  ? ` › ${(recommendation.customCategory as CustomCategory).label}` 
+                  : ` › ${recommendation.customCategory}`
+              )}
             </span>
             {recommendation.isCompleted && (
               <span className="ml-3 inline-flex items-center text-sm font-medium text-green-600 dark:text-green-500">
