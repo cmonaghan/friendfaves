@@ -1,6 +1,7 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getRecommendations } from '@/utils/mockData';
+import { mockRecommendations } from '@/utils/mockData';
 import RecommendationCard from '@/components/RecommendationCard';
 import { RecommendationType } from '@/utils/types';
 import { useStaggeredAnimation } from '@/utils/animations';
@@ -32,8 +33,7 @@ const RecommendationList = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showCompleted, setShowCompleted] = useState(true);
   
-  const recommendations = getRecommendations();
-  
+  // Update URL when tab changes
   useEffect(() => {
     if (activeTab === 'all') {
       searchParams.delete('type');
@@ -43,16 +43,20 @@ const RecommendationList = () => {
     setSearchParams(searchParams);
   }, [activeTab, searchParams, setSearchParams]);
   
-  const filteredRecommendations = recommendations
+  // Filter recommendations
+  const filteredRecommendations = mockRecommendations
     .filter(rec => {
+      // Filter by type
       if (activeTab !== 'all' && rec.type !== activeTab) {
         return false;
       }
       
+      // Filter by search query
       if (searchQuery && !rec.title.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       
+      // Filter by completion status
       if (!showCompleted && rec.isCompleted) {
         return false;
       }
@@ -60,11 +64,13 @@ const RecommendationList = () => {
       return true;
     })
     .sort((a, b) => {
+      // Sort by date
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
       return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
   
+  // Staggered animation for cards
   const cardsRef = useRef<HTMLDivElement>(null);
   useStaggeredAnimation(cardsRef, 75, 100);
   

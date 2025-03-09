@@ -1,11 +1,11 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RecommendationType, Recommendation } from "@/utils/types";
-import { getPeople } from "@/utils/mockData";
-import { addRecommendation, addPerson } from "@/utils/localStorage";
+import { RecommendationType } from "@/utils/types";
+import { mockPeople } from "@/utils/mockData";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
 
@@ -45,7 +45,6 @@ const AddRecommendationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddingNewFriend, setIsAddingNewFriend] = useState(false);
   const navigate = useNavigate();
-  const people = getPeople();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -64,30 +63,17 @@ const AddRecommendationForm = () => {
     setIsSubmitting(true);
     
     try {
-      let recommender = people.find(p => p.id === data.recommenderId);
-      
+      // This is where we would normally submit to an API
       if (isAddingNewFriend && data.newFriendName) {
         console.log("Adding new friend:", data.newFriendName);
-        recommender = addPerson({ name: data.newFriendName });
+        // In a real app, we would add the new friend to the database
+        // and then use the new friend's ID for the recommendation
       }
       
-      if (!recommender) {
-        throw new Error("Recommender not found");
-      }
+      console.log("Form submitted:", data);
       
-      const newRecommendation: Omit<Recommendation, 'id'> = {
-        title: data.title,
-        type: data.type,
-        recommender: recommender,
-        reason: data.reason,
-        notes: data.notes || undefined,
-        source: data.source || undefined,
-        date: new Date().toISOString(),
-        isCompleted: false
-      };
-      
-      const savedRecommendation = addRecommendation(newRecommendation);
-      console.log("Recommendation saved:", savedRecommendation);
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 800));
       
       toast.success("Recommendation added successfully!");
       navigate("/recommendations");
@@ -176,7 +162,7 @@ const AddRecommendationForm = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {people.map((person) => (
+                        {mockPeople.map((person) => (
                           <SelectItem key={person.id} value={person.id}>
                             {person.name}
                           </SelectItem>
