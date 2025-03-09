@@ -87,27 +87,33 @@ const Index = () => {
     
     let filtered = [];
     
-    if (activeTab === RecommendationType.OTHER) {
-      filtered = recommendations.filter(rec => rec.type === RecommendationType.OTHER);
+    const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
+    
+    if (isCustomCategory) {
+      filtered = recommendations.filter(
+        rec => rec.type === RecommendationType.OTHER && rec.customCategory === activeTab
+      );
+      console.log(`Found ${filtered.length} recommendations for custom category ${activeTab}:`, filtered);
+    } else if (activeTab === RecommendationType.OTHER) {
+      filtered = recommendations.filter(rec => 
+        rec.type === RecommendationType.OTHER && !rec.customCategory
+      );
+      console.log(`Found ${filtered.length} recommendations for general "Other" category:`, filtered);
     } else {
-      const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
-      if (isCustomCategory) {
-        filtered = recommendations.filter(
-          rec => rec.type === RecommendationType.OTHER && rec.customCategory === activeTab
-        );
-      } else {
-        filtered = recommendations.filter(rec => rec.type === activeTab);
-      }
+      filtered = recommendations.filter(rec => rec.type === activeTab);
+      console.log(`Found ${filtered.length} recommendations for standard category ${activeTab}:`, filtered);
     }
     
-    console.log(`Found ${filtered.length} recommendations for tab ${activeTab}:`, filtered);
     return filtered.slice(0, 3);
   };
   
   let filteredRecommendations = getFilteredRecommendations();
   
-  if (filteredRecommendations.length === 0 && defaultCategories.some(cat => cat.type === activeTab)) {
-    console.log("No recommendations for this category, showing fallback recommendations");
+  const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
+  
+  if (filteredRecommendations.length === 0 && !isCustomCategory && 
+      defaultCategories.some(cat => cat.type === activeTab)) {
+    console.log("No recommendations for this standard category, showing fallback recommendations");
     filteredRecommendations = recommendations.slice(0, 3);
   }
   
@@ -127,7 +133,6 @@ const Index = () => {
   const handleCategoryClick = (categoryType: RecommendationType | string) => {
     setActiveTab(categoryType);
     
-    // Scroll to the results section with smooth animation
     if (resultsSectionRef.current) {
       resultsSectionRef.current.scrollIntoView({ 
         behavior: 'smooth',
@@ -136,7 +141,6 @@ const Index = () => {
     }
   };
   
-  // This function is passed to the RecommendationsSection to get the ref
   const setResultsSectionRef = (ref: React.RefObject<HTMLDivElement>) => {
     if (ref.current) {
       resultsSectionRef.current = ref.current;
