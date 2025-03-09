@@ -90,3 +90,8 @@ export const toggleRecommendationCompletion = (id: string): Recommendation | und
   
   return undefined;
 };
+
+// These helper functions for getting data can be used throughout the application
+export const getRecommendationsByType = (type: RecommendationType) => {
+  return getRecommendations().filter(rec => rec.type === type);
+};
