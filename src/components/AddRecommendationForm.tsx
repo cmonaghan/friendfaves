@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -48,8 +47,7 @@ const AddRecommendationForm = () => {
   const [people, setPeople] = useState<Person[]>([]);
   const navigate = useNavigate();
 
-  // Fetch people when component mounts
-  useState(() => {
+  useEffect(() => {
     const loadPeople = async () => {
       try {
         const fetchedPeople = await getPeople();
@@ -61,7 +59,7 @@ const AddRecommendationForm = () => {
     };
 
     loadPeople();
-  });
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

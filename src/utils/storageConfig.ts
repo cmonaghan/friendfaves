@@ -8,5 +8,14 @@ export enum StorageProvider {
   DATABASE = 'database'
 }
 
+// Database configuration
+export const dbConfig = {
+  host: import.meta.env.VITE_DB_HOST || 'localhost',
+  port: import.meta.env.VITE_DB_PORT || '5432',
+  user: import.meta.env.VITE_DB_USER || 'postgres',
+  password: import.meta.env.VITE_DB_PASSWORD || 'postgres',
+  database: import.meta.env.VITE_DB_NAME || 'recommendations'
+};
+
 // The current storage provider based on demo mode
 export const currentStorageProvider = isDemo ? StorageProvider.LOCAL_STORAGE : StorageProvider.DATABASE;
