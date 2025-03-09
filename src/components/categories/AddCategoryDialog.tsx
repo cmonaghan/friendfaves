@@ -56,9 +56,10 @@ type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 interface AddCategoryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCategoryCreated?: (categoryType: string) => void;
 }
 
-export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps) {
+export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: AddCategoryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -71,6 +72,16 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
       icon: "HelpCircle"
     }
   });
+
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        label: "",
+        icon: "HelpCircle"
+      });
+    }
+  }, [open, form]);
 
   // Function to get a color that's not already in use
   const getUnusedColor = () => {
@@ -120,6 +131,11 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
         onOpenChange(false);
         
         form.reset();
+        
+        // Call the onCategoryCreated callback if provided
+        if (onCategoryCreated) {
+          onCategoryCreated(type);
+        }
       } else {
         toast.error("Failed to add category");
       }

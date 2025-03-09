@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
@@ -8,6 +9,7 @@ import { UseFormReturn } from "react-hook-form";
 import { RecommendationFormValues } from "./types";
 import { useCustomCategories } from "@/hooks/useRecommendationQueries";
 import { useAuth } from "@/contexts/AuthProvider";
+import { AddCategoryDialog } from "@/components/categories/AddCategoryDialog";
 
 interface TitleAndTypeFieldsProps {
   form: UseFormReturn<RecommendationFormValues>;
@@ -15,9 +17,21 @@ interface TitleAndTypeFieldsProps {
 }
 
 export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsProps) {
+  const [showAddCategoryDialog, setShowAddCategoryDialog] = useState(false);
   // Fetch custom categories from the database
   const { data: customCategories = [] } = useCustomCategories();
   const { user } = useAuth();
+  
+  const handleTypeChange = (value: string) => {
+    if (value === RecommendationType.OTHER) {
+      // Open the AddCategoryDialog when "Custom Category" is selected
+      setShowAddCategoryDialog(true);
+      return;
+    }
+    
+    // Call the parent component's onTypeChange for other type selections
+    onTypeChange(value);
+  };
 
   return (
     <div className="space-y-6">
@@ -42,7 +56,7 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
           <FormItem>
             <FormLabel>Type</FormLabel>
             <Select
-              onValueChange={onTypeChange}
+              onValueChange={handleTypeChange}
               defaultValue={field.value}
             >
               <FormControl>
@@ -76,6 +90,18 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
             <FormMessage />
           </FormItem>
         )}
+      />
+
+      {/* Add the AddCategoryDialog component */}
+      <AddCategoryDialog 
+        open={showAddCategoryDialog} 
+        onOpenChange={(open) => {
+          setShowAddCategoryDialog(open);
+          // If dialog is closed and no category was selected, reset to default
+          if (!open) {
+            onTypeChange(RecommendationType.BOOK);
+          }
+        }} 
       />
     </div>
   );
