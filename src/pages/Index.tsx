@@ -13,7 +13,7 @@ import { useStaggeredAnimation } from '@/utils/animations';
 const Index = () => {
   const [activeTab, setActiveTab] = useState<RecommendationType | string>(RecommendationType.BOOK);
   const categoryRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null); // Add missing cardsRef
+  const cardsRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -92,6 +92,7 @@ const Index = () => {
     }))
   ];
   
+  // Updated filtering logic to ensure test data shows for non-logged in users
   const filteredRecommendations = recommendations
     .filter(rec => {
       if (activeTab === RecommendationType.OTHER) {
@@ -218,9 +219,11 @@ const Index = () => {
               <p className="text-muted-foreground">
                 {user ? 'No recommendations yet. Add your first one!' : 'No recommendations found for this category.'}
               </p>
-              <Button asChild variant="outline" className="mt-4">
-                <Link to="/add">Add your first {activeTab} recommendation</Link>
-              </Button>
+              {user && (
+                <Button asChild variant="outline" className="mt-4">
+                  <Link to="/add">Add your first {activeTab} recommendation</Link>
+                </Button>
+              )}
             </div>
           )}
         </div>
