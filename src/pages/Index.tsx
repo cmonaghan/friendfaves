@@ -169,7 +169,7 @@ const Index = () => {
       {!user && <HeroSection />}
 
       <div className="mb-4">
-        <Button asChild className="flex items-center gap-2">
+        <Button asChild className="flex items-center gap-2 w-auto">
           <Link to="/add">
             <Plus size={16} />
             Add Recommendation
