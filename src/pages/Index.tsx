@@ -25,13 +25,17 @@ const Index = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        // We'll directly log the storage configuration to debug
+        console.log("Loading recommendations, user authenticated:", !!user);
+        
         const [recommendationsData, categoriesData] = await Promise.all([
           getRecommendations(),
           getCustomCategories()
         ]);
         
+        console.log("Fetched recommendations:", recommendationsData);
         setRecommendations(recommendationsData);
-        console.log("Fetched recommendations:", recommendationsData.length); // Debug log
         
         if (user && categoriesData.length > 0) {
           setCustomCategories(categoriesData);
@@ -61,6 +65,8 @@ const Index = () => {
   
   // Count recommendations by type or custom category
   const getCategoryCount = (categoryType: RecommendationType | string) => {
+    if (!recommendations || recommendations.length === 0) return 0;
+    
     if (categoryType === RecommendationType.OTHER) {
       return recommendations.filter(rec => rec.type === RecommendationType.OTHER).length;
     }
@@ -93,14 +99,14 @@ const Index = () => {
     }))
   ];
   
-  // Get filtered recommendations based on active tab
+  // Get filtered recommendations based on active tab with improved debugging
   const getFilteredRecommendations = () => {
     if (!recommendations || recommendations.length === 0) {
-      console.log("No recommendations available to filter"); // Debug log
+      console.log("No recommendations available to filter"); 
       return [];
     }
     
-    console.log(`Filtering recommendations for tab: ${activeTab}, total recommendations: ${recommendations.length}`); // Debug log
+    console.log(`Filtering recommendations for tab: ${activeTab}, total recommendations:`, recommendations);
     
     let filtered = [];
     
@@ -117,11 +123,32 @@ const Index = () => {
       }
     }
     
-    console.log(`Found ${filtered.length} recommendations for tab ${activeTab}`); // Debug log
+    console.log(`Found ${filtered.length} recommendations for tab ${activeTab}:`, filtered);
     return filtered.slice(0, 3);
   };
   
-  const filteredRecommendations = getFilteredRecommendations();
+  let filteredRecommendations = getFilteredRecommendations();
+  
+  // If we're using a built-in category but there are no results, show some recommendations anyway
+  if (filteredRecommendations.length === 0 && defaultCategories.some(cat => cat.type === activeTab)) {
+    console.log("No recommendations for this category, showing fallback recommendations");
+    filteredRecommendations = recommendations.slice(0, 3);
+  }
+  
+  // Make sure we always have something to show
+  if (recommendations.length > 0 && filteredRecommendations.length === 0) {
+    console.log("Using fallback recommendations");
+    filteredRecommendations = recommendations.slice(0, 3);
+  }
+  
+  // Double check that our storage config has SHOW_TEST_DATA_FOR_VISITORS set to true
+  useEffect(() => {
+    if (!user) {
+      import('@/utils/storageConfig').then(config => {
+        console.log("SHOW_TEST_DATA_FOR_VISITORS:", config.SHOW_TEST_DATA_FOR_VISITORS);
+      });
+    }
+  }, [user]);
   
   if (loading) {
     return (
