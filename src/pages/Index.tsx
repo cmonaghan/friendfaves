@@ -1,9 +1,8 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
 import RecommendationCard from '@/components/RecommendationCard';
-import { ArrowRight, Book, Film, Tv, Utensils, HelpCircle } from 'lucide-react';
+import { ArrowRight, Book, Film, Tv, Utensils, Store, Headphones, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -59,7 +58,6 @@ const Index = () => {
     fetchData();
   }, [user]);
   
-  // Manual animation for cards instead of using staggered animation
   useEffect(() => {
     if (!loading && cardsRef.current) {
       const cards = cardsRef.current.querySelectorAll('.recommendation-card');
@@ -71,14 +69,12 @@ const Index = () => {
         }, index * 100);
       });
       
-      // Set animation as completed after all cards have animated
       setTimeout(() => {
         setAnimationComplete(true);
       }, cards.length * 100 + 200);
     }
   }, [loading, recommendations, activeTab]);
   
-  // Count recommendations by type or custom category
   const getCategoryCount = (categoryType: RecommendationType | string) => {
     if (!recommendations || recommendations.length === 0) return 0;
     
@@ -101,7 +97,8 @@ const Index = () => {
     { type: RecommendationType.MOVIE, label: 'Movies', icon: Film, color: 'bg-purple-50' },
     { type: RecommendationType.TV, label: 'TV Shows', icon: Tv, color: 'bg-pink-50' },
     { type: RecommendationType.RECIPE, label: 'Recipes', icon: Utensils, color: 'bg-green-50' },
-    // Restaurant category removed
+    { type: RecommendationType.RESTAURANT, label: 'Restaurants', icon: Store, color: 'bg-amber-50' },
+    { type: RecommendationType.PODCAST, label: 'Podcasts', icon: Headphones, color: 'bg-blue-100' },
   ];
   
   const categories = [
@@ -114,7 +111,6 @@ const Index = () => {
     }))
   ];
   
-  // Get filtered recommendations based on active tab with improved debugging
   const getFilteredRecommendations = () => {
     if (!recommendations || recommendations.length === 0) {
       console.log("No recommendations available to filter"); 
@@ -144,19 +140,16 @@ const Index = () => {
   
   let filteredRecommendations = getFilteredRecommendations();
   
-  // If we're using a built-in category but there are no results, show some recommendations anyway
   if (filteredRecommendations.length === 0 && defaultCategories.some(cat => cat.type === activeTab)) {
     console.log("No recommendations for this category, showing fallback recommendations");
     filteredRecommendations = recommendations.slice(0, 3);
   }
   
-  // Make sure we always have something to show
   if (recommendations.length > 0 && filteredRecommendations.length === 0) {
     console.log("Using fallback recommendations");
     filteredRecommendations = recommendations.slice(0, 3);
   }
   
-  // Double check that our storage config has SHOW_TEST_DATA_FOR_VISITORS set to true
   useEffect(() => {
     if (!user) {
       import('@/utils/storageConfig').then(config => {

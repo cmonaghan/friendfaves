@@ -199,6 +199,7 @@ const AddRecommendationForm = () => {
                         <SelectItem value={RecommendationType.TV}>TV Show</SelectItem>
                         <SelectItem value={RecommendationType.RECIPE}>Recipe</SelectItem>
                         <SelectItem value={RecommendationType.RESTAURANT}>Restaurant</SelectItem>
+                        <SelectItem value={RecommendationType.PODCAST}>Podcast</SelectItem>
                         <SelectItem value={RecommendationType.OTHER}>
                           <div className="flex items-center gap-2">
                             <Plus className="h-4 w-4" />

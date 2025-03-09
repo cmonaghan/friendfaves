@@ -1,6 +1,6 @@
 
 import { RecommendationType } from "@/utils/types";
-import { Book, Film, Tv, Utensils, Store, HelpCircle } from "lucide-react";
+import { Book, Film, Tv, Utensils, Store, Headphones, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CategoryTagProps {
@@ -45,6 +45,11 @@ const CategoryTag = ({ type, className, showLabel = true, size = 'md', customCat
       Icon = Store;
       color = 'bg-amber-50 text-amber-700';
       label = 'Restaurant';
+      break;
+    case RecommendationType.PODCAST:
+      Icon = Headphones;
+      color = 'bg-blue-100 text-blue-700';
+      label = 'Podcast';
       break;
     case RecommendationType.OTHER:
       Icon = HelpCircle;
