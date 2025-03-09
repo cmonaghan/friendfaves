@@ -47,19 +47,32 @@ const RecommendationList = () => {
   }, [customCategoriesData, recommendations]);
   
   // Process all custom categories from both API data and recommendation data
-  const customCategories: CustomCategory[] = user 
-    ? customCategoriesData 
+  const customCategories: CustomCategory[] = customCategoriesData.length > 0
+    ? customCategoriesData  // Use the API-provided custom categories if available
     : recommendations
         .filter(rec => rec.type === RecommendationType.OTHER && rec.customCategory)
-        .map(rec => ({ 
-          type: rec.customCategory as string, 
-          label: rec.customCategory as string 
-        }))
+        .map(rec => {
+          // Handle both string and object customCategory formats
+          if (typeof rec.customCategory === 'string') {
+            return { 
+              type: rec.customCategory, 
+              label: rec.customCategory 
+            };
+          } else if (rec.customCategory && typeof rec.customCategory === 'object') {
+            return rec.customCategory as CustomCategory;
+          }
+          return null;
+        })
+        .filter((cat): cat is CustomCategory => cat !== null)
         .reduce((unique: CustomCategory[], cat) => {
           return unique.some(item => item.type === cat.type) 
             ? unique 
             : [...unique, cat];
         }, []);
+  
+  useEffect(() => {
+    console.log("Processed custom categories:", customCategories);
+  }, [customCategories]);
   
   // Update URL when activeTab changes
   useEffect(() => {
@@ -83,7 +96,9 @@ const RecommendationList = () => {
       
       const isCustomCategory = customCategories.some(cat => cat.type === activeTab);
       if (isCustomCategory) {
-        return rec.type === RecommendationType.OTHER && rec.customCategory === activeTab;
+        return rec.type === RecommendationType.OTHER && 
+               (typeof rec.customCategory === 'string' && rec.customCategory === activeTab) ||
+               (typeof rec.customCategory === 'object' && (rec.customCategory as CustomCategory).type === activeTab);
       }
       
       return rec.type === activeTab;
@@ -226,7 +241,7 @@ const RecommendationList = () => {
             )}
             
             {/* List all custom categories as their own tabs */}
-            {customCategories?.map(category => (
+            {customCategories.length > 0 && customCategories.map(category => (
               <TabsTrigger 
                 key={category.type} 
                 value={category.type}
