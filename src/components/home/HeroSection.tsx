@@ -1,8 +1,11 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthProvider';
 
 const HeroSection = () => {
+  const { user } = useAuth();
+  
   return (
     <section className="mb-12 py-12 sm:py-16 px-4">
       <div className="max-w-3xl mx-auto text-center">
@@ -23,7 +26,7 @@ const HeroSection = () => {
           </Button>
           <Button asChild variant="outline" size="lg" className="rounded-full px-8">
             <Link to="/recommendations">
-              Browse All
+              {user ? "Browse All" : "Browse Examples"}
             </Link>
           </Button>
         </div>
