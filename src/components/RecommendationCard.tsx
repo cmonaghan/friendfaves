@@ -57,7 +57,7 @@ const RecommendationCard = forwardRef<HTMLDivElement, RecommendationCardProps>(
           )}
           
           <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
-            <Avatar person={recommender} size="sm" />
+            <Avatar person={recommender} size="sm" showName={true} />
             
             <div className="flex items-center text-xs text-muted-foreground">
               <Calendar size={14} className="mr-1" />
