@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthProvider';
 import { getRecommendations, getCustomCategories } from '@/utils/storage';
-import { useStaggeredAnimation } from '@/utils/animations';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<RecommendationType | string>(RecommendationType.BOOK);
@@ -18,15 +17,12 @@ const Index = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [customCategories, setCustomCategories] = useState<CustomCategory[]>([]);
-  
-  // Apply staggered animation to the cards
-  useStaggeredAnimation(cardsRef, 100, 200);
+  const [animationComplete, setAnimationComplete] = useState(false);
   
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // We'll directly log the storage configuration to debug
         console.log("Loading recommendations, user authenticated:", !!user);
         
         const [recommendationsData, categoriesData] = await Promise.all([
@@ -62,6 +58,25 @@ const Index = () => {
     
     fetchData();
   }, [user]);
+  
+  // Manual animation for cards instead of using staggered animation
+  useEffect(() => {
+    if (!loading && cardsRef.current) {
+      const cards = cardsRef.current.querySelectorAll('.recommendation-card');
+      
+      cards.forEach((card, index) => {
+        setTimeout(() => {
+          (card as HTMLElement).style.opacity = '1';
+          (card as HTMLElement).style.transform = 'translateY(0)';
+        }, index * 100);
+      });
+      
+      // Set animation as completed after all cards have animated
+      setTimeout(() => {
+        setAnimationComplete(true);
+      }, cards.length * 100 + 200);
+    }
+  }, [loading, recommendations, activeTab]);
   
   // Count recommendations by type or custom category
   const getCategoryCount = (categoryType: RecommendationType | string) => {
@@ -249,11 +264,11 @@ const Index = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {filteredRecommendations.length > 0 ? (
-            filteredRecommendations.map((recommendation) => (
+            filteredRecommendations.map((recommendation, index) => (
               <RecommendationCard 
                 key={recommendation.id} 
                 recommendation={recommendation} 
-                className="opacity-0 transform translate-y-10 transition-all duration-500"
+                className="recommendation-card transition-all duration-500 opacity-100"
               />
             ))
           ) : (

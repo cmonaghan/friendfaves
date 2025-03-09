@@ -1,63 +1,47 @@
 
-import { RefObject, useEffect, useState } from 'react';
+import { RefObject, useEffect } from 'react';
 
-// Custom hook for staggered animations
-export function useStaggeredAnimation(
-  ref: RefObject<HTMLElement>,
-  delayIncrement: number = 50,
-  baseDelay: number = 100
-) {
+/**
+ * Hook to apply a staggered animation to a set of elements
+ */
+export const useStaggeredAnimation = (
+  containerRef: RefObject<HTMLElement>, 
+  delay = 100, 
+  initialDelay = 0
+) => {
   useEffect(() => {
-    const container = ref.current;
-    if (!container) return;
-
-    const elements = Array.from(container.children);
+    if (!containerRef.current) return;
     
-    elements.forEach((element, index) => {
-      const delay = baseDelay + index * delayIncrement;
-      (element as HTMLElement).style.opacity = '0';
-      (element as HTMLElement).style.transform = 'translateY(10px)';
-      
-      setTimeout(() => {
-        (element as HTMLElement).style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        (element as HTMLElement).style.opacity = '1';
-        (element as HTMLElement).style.transform = 'translateY(0)';
-      }, delay);
-    });
-  }, [ref, delayIncrement, baseDelay]);
-}
-
-// Custom hook for intersection observer animations
-export function useIntersectionAnimation(
-  threshold: number = 0.1
-) {
-  const [observedElements, setObservedElements] = useState<Element[]>([]);
-  
-  useEffect(() => {
+    const items = containerRef.current.querySelectorAll('.opacity-0');
+    
+    if (items.length === 0) return;
+    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('animate-slide-up');
-            observer.unobserve(entry.target);
+            const element = entry.target as HTMLElement;
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+            observer.unobserve(element);
           }
         });
       },
-      { threshold }
+      { threshold: 0.1 }
     );
     
-    observedElements.forEach((el) => observer.observe(el));
+    setTimeout(() => {
+      items.forEach((item, index) => {
+        setTimeout(() => {
+          observer.observe(item);
+        }, index * delay);
+      });
+    }, initialDelay);
     
     return () => {
-      observedElements.forEach((el) => observer.unobserve(el));
+      items.forEach(item => {
+        observer.unobserve(item);
+      });
     };
-  }, [observedElements, threshold]);
-  
-  const observe = (element: Element) => {
-    if (element && !observedElements.includes(element)) {
-      setObservedElements(prev => [...prev, element]);
-    }
-  };
-  
-  return { observe };
-}
+  }, [containerRef, delay, initialDelay]);
+};

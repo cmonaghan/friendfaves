@@ -28,7 +28,7 @@ const RecommendationCard = forwardRef<HTMLDivElement, RecommendationCardProps>(
         ref={ref}
         className={cn(
           'group relative overflow-hidden bg-card rounded-lg border shadow-sm transition-all duration-300 hover:shadow-md',
-          isCompleted ? 'opacity-75' : 'opacity-100',
+          isCompleted ? 'opacity-75' : '',
           className
         )}
       >
