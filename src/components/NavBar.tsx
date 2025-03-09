@@ -1,6 +1,6 @@
 
 import { useLocation, Link } from "react-router-dom";
-import { Book, Home, LogOut, User } from "lucide-react";
+import { Book, Home, LogOut, Menu, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -18,6 +18,7 @@ const NavBar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { user, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,6 +28,11 @@ const NavBar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleSignOut = async () => {
     if (isSigningOut) return;
@@ -65,6 +71,7 @@ const NavBar = () => {
             </Link>
           </div>
           
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) => (
               <Link 
@@ -85,6 +92,17 @@ const NavBar = () => {
           </nav>
           
           <div className="flex items-center gap-2">
+            {/* Mobile Menu Toggle */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </Button>
+
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -114,6 +132,31 @@ const NavBar = () => {
             )}
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-2 px-2 bg-white/95 backdrop-blur-sm shadow-md rounded-md mt-2 animate-in fade-in slide-in-from-top-5 duration-200">
+            <nav className="flex flex-col space-y-1">
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.path} 
+                  to={link.path} 
+                  className={`px-3 py-3 rounded-md text-sm font-medium transition-colors ${
+                    location.pathname === link.path 
+                      ? "bg-secondary text-primary" 
+                      : "text-muted-foreground hover:text-primary hover:bg-secondary/50"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <span className="flex items-center gap-2">
+                    <link.icon size={16} />
+                    {link.label}
+                  </span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );
