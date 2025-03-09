@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { getRecommendations, getCustomCategories } from '@/utils/storage';
@@ -242,6 +243,7 @@ const RecommendationList = () => {
             <TabsTrigger value={RecommendationType.TV} className="flex-1">TV Shows</TabsTrigger>
             <TabsTrigger value={RecommendationType.RECIPE} className="flex-1">Recipes</TabsTrigger>
             <TabsTrigger value={RecommendationType.RESTAURANT} className="flex-1">Restaurants</TabsTrigger>
+            <TabsTrigger value={RecommendationType.PODCAST} className="flex-1">Podcasts</TabsTrigger>
             {customCategories.map(category => (
               <TabsTrigger 
                 key={category.type} 
