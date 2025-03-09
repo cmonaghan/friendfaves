@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -10,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { addCustomCategory } from "@/utils/storage";
-import { queryKeys } from "@/hooks/useRecommendationQueries";
+import { queryKeys, useCustomCategories } from "@/hooks/useRecommendationQueries";
 import { 
   Book, Film, Tv, Utensils, Store, Headphones, HelpCircle,
   PlaneTakeoff, MapPin, Music, Building, Gift, Newspaper, Binoculars 
@@ -47,7 +48,6 @@ const iconOptions = [
 
 const categoryFormSchema = z.object({
   label: z.string().min(2, { message: "Category name must be at least 2 characters" }).max(30, { message: "Category name must be less than 30 characters" }),
-  color: z.string().optional(),
   icon: z.string().default("HelpCircle"),
 });
 
@@ -62,15 +62,31 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { data: customCategories = [] } = useCustomCategories();
   
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       label: "",
-      color: "bg-gray-50",
       icon: "HelpCircle"
     }
   });
+
+  // Function to get a color that's not already in use
+  const getUnusedColor = () => {
+    // Get the colors currently in use by default and custom categories
+    const usedColors = new Set([
+      "bg-blue-50", "bg-purple-50", "bg-pink-50", 
+      "bg-green-50", "bg-amber-50", "bg-blue-100",
+      ...customCategories.map(cat => cat.color || "")
+    ]);
+    
+    // Find the first color from our options that's not in use
+    const availableColor = colorOptions.find(color => !usedColors.has(color.value));
+    
+    // If all colors are used, return a default
+    return availableColor?.value || "bg-gray-50";
+  };
 
   const onSubmit = async (values: CategoryFormValues) => {
     setIsSubmitting(true);
@@ -78,10 +94,13 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
     try {
       const type = values.label.toLowerCase().replace(/\s+/g, '-');
       
+      // Automatically select a color that's not already in use
+      const unusedColor = getUnusedColor();
+      
       const newCategory = {
         type,
         label: values.label,
-        color: values.color || "bg-gray-50",
+        color: unusedColor,
         icon: values.icon || "HelpCircle"
       };
       
@@ -112,9 +131,10 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
     }
   };
 
-  const selectedColor = form.watch("color") || "bg-gray-50";
   const selectedIcon = form.watch("icon") || "HelpCircle";
   const SelectedIconComponent = iconOptions.find(icon => icon.value === selectedIcon)?.icon || HelpCircle;
+  // Get a preview color for the selected appearance
+  const previewColor = getUnusedColor();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -168,34 +188,18 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category Color</FormLabel>
-                  <div className="grid grid-cols-3 gap-2">
-                    {colorOptions.map((color) => (
-                      <div
-                        key={color.value}
-                        className={`${color.value} rounded-md p-2 cursor-pointer text-center transition-all ${
-                          field.value === color.value ? "ring-2 ring-primary" : "hover:ring-1 hover:ring-primary/50"
-                        }`}
-                        onClick={() => form.setValue("color", color.value)}
-                      >
-                        <span className="text-xs">{color.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center mt-2">
-                    <div className={`w-8 h-8 rounded-full ${selectedColor} mr-2 flex items-center justify-center`}>
-                      <SelectedIconComponent size={16} />
-                    </div>
-                    <span className="text-sm">Selected Appearance</span>
-                  </div>
-                </FormItem>
-              )}
-            />
+            {/* Preview of the category appearance */}
+            <div className="mt-4">
+              <FormLabel>Category Appearance</FormLabel>
+              <div className="flex items-center mt-2">
+                <div className={`w-8 h-8 rounded-full ${previewColor} mr-2 flex items-center justify-center`}>
+                  <SelectedIconComponent size={16} />
+                </div>
+                <span className="text-sm">
+                  Your category will use an automatically selected color
+                </span>
+              </div>
+            </div>
             
             <div className="flex justify-end space-x-2">
               <Button
