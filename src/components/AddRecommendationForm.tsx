@@ -56,6 +56,7 @@ const AddRecommendationForm = () => {
       source: "",
       customCategory: "",
     },
+    mode: "onBlur", // Only validate on blur, not on change
   });
 
   const onSubmit = async (data: RecommendationFormValues) => {
@@ -65,20 +66,35 @@ const AddRecommendationForm = () => {
   const handleRecommenderChange = (value: string) => {
     if (value === "new") {
       setIsAddingNewFriend(true);
-      form.setValue("recommenderId", "new");
+      form.setValue("recommenderId", "new", {
+        shouldValidate: false // Prevent immediate validation
+      });
     } else {
       setIsAddingNewFriend(false);
-      form.setValue("recommenderId", value);
+      form.setValue("recommenderId", value, {
+        shouldValidate: false // Prevent immediate validation
+      });
     }
   };
 
   const handleTypeChange = (value: string) => {
+    console.log("Type changed to:", value);
+    
+    // Update the form value without triggering validation
     form.setValue("type", value, { 
-      shouldValidate: false  // Avoid triggering validation on programmatic changes
+      shouldValidate: false
     });
     
-    // Show the custom category field only if the user is creating a truly new category
-    setIsCustomCategory(value === RecommendationType.OTHER);
+    // Show the custom category field only for custom types
+    const isCustom = value === RecommendationType.OTHER;
+    setIsCustomCategory(isCustom);
+    
+    // Clear the custom category field if not needed
+    if (!isCustom) {
+      form.setValue("customCategory", "", {
+        shouldValidate: false
+      });
+    }
   };
 
   return (

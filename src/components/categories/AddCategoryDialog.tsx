@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { addCustomCategory } from "@/utils/storage";
 import { queryKeys, useCustomCategories } from "@/hooks/useRecommendationQueries";
 import { CategoryForm } from "./CategoryForm";
-import { CategoryFormValues } from "./types";
+import { CategoryFormValues, colorOptions } from "./types";
 
 interface AddCategoryDialogProps {
   open: boolean;
@@ -50,12 +50,14 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
           queryKey: queryKeys.customCategories
         });
         
-        onOpenChange(false);
-        
-        // Call the onCategoryCreated callback if provided
+        // Call the onCategoryCreated callback immediately before closing the dialog
         if (onCategoryCreated) {
+          console.log("Calling onCategoryCreated with type:", type);
           onCategoryCreated(type);
         }
+        
+        // Close the dialog after the category is created and callback is called
+        onOpenChange(false);
       } else {
         toast.error("Failed to add category");
       }
