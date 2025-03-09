@@ -22,6 +22,7 @@ import { useRecommendationById } from '@/hooks/useRecommendationQueries';
 
 // Import the queryKeys for cache invalidation
 import { queryKeys } from '@/hooks/useRecommendationQueries';
+import { CustomCategory } from '@/utils/types';
 
 const RecommendationDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -205,7 +206,11 @@ const RecommendationDetail = () => {
           <div className="mb-6 flex items-center">
             <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
               {recommendation.type}
-              {recommendation.customCategory ? ` › ${recommendation.customCategory.name}` : ''}
+              {recommendation.customCategory && typeof recommendation.customCategory === 'object' 
+                ? ` › ${recommendation.customCategory.label}` 
+                : recommendation.customCategory 
+                  ? ` › ${recommendation.customCategory}` 
+                  : ''}
             </span>
             {recommendation.isCompleted && (
               <span className="ml-3 inline-flex items-center text-sm font-medium text-green-600 dark:text-green-500">
