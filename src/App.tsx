@@ -1,58 +1,51 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
-import { initializeStorage } from "./utils/storage";
-import Layout from "./components/Layout";
-import Index from "./pages/Index";
-import RecommendationList from "./pages/RecommendationList";
-import RecommendationDetail from "./pages/RecommendationDetail";
-import AddRecommendation from "./pages/AddRecommendation";
-import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import { AuthProvider } from "./contexts/AuthProvider";
-import RequireAuth from "./components/RequireAuth";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from "@/components/theme-provider";
+import Layout from './components/Layout';
+import Index from './pages/Index';
+import RecommendationList from './pages/RecommendationList';
+import RecommendationDetail from './pages/RecommendationDetail';
+import ViewRecommendation from './pages/ViewRecommendation';
+import AddRecommendation from './pages/AddRecommendation';
+import Auth from './pages/Auth';
+import NotFound from './pages/NotFound';
+import { Toaster } from '@/components/ui/toaster';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from './contexts/AuthProvider';
 
-const queryClient = new QueryClient();
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 1, // 1 minute
+    },
+  },
+});
 
-const App = () => {
-  // Initialize storage on app start
-  useEffect(() => {
-    initializeStorage();
-  }, []);
-
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/" element={<Layout><Index /></Layout>} />
-              <Route path="/auth" element={<Layout><Auth /></Layout>} />
-              <Route 
-                path="/recommendations" 
-                element={<Layout><RecommendationList /></Layout>} 
-              />
-              <Route 
-                path="/recommendation/:id" 
-                element={<Layout><RecommendationDetail /></Layout>} 
-              />
-              <Route 
-                path="/add" 
-                element={<Layout><AddRecommendation /></Layout>} 
-              />
-              <Route path="*" element={<Layout><NotFound /></Layout>} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <AuthProvider>
+          <Router>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/recommendations" element={<RecommendationList />} />
+                <Route path="/recommendation/:id" element={<ViewRecommendation />} />
+                <Route path="/recommendation/:id/edit" element={<RecommendationDetail />} />
+                <Route path="/add" element={<AddRecommendation />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Layout>
+          </Router>
+          <Toaster />
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
