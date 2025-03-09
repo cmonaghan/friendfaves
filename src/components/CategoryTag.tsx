@@ -1,7 +1,7 @@
-
 import { RecommendationType } from "@/utils/types";
 import { Book, Film, Tv, Utensils, Store, Headphones, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCustomCategories } from "@/hooks/useRecommendationQueries";
 
 interface CategoryTagProps {
   type: RecommendationType;
@@ -16,9 +16,38 @@ const CategoryTag = ({ type, className, showLabel = true, size = 'md', customCat
   const paddingClass = size === 'sm' ? 'py-0.5 px-2' : size === 'md' ? 'py-1 px-2.5' : 'py-1.5 px-3';
   const textClass = size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base';
   
+  const { data: customCategories = [] } = useCustomCategories();
+  
   let Icon = HelpCircle;
   let color = 'bg-gray-100 text-gray-700';
   let label = customCategory || 'Other';
+
+  if (customCategory) {
+    const matchedCategory = customCategories.find(cat => cat.type === customCategory);
+    if (matchedCategory?.icon) {
+      switch (matchedCategory.icon) {
+        case 'Book': Icon = Book; break;
+        case 'Film': Icon = Film; break;
+        case 'Tv': Icon = Tv; break;
+        case 'Utensils': Icon = Utensils; break;
+        case 'Store': Icon = Store; break;
+        case 'Headphones': Icon = Headphones; break;
+        default: Icon = HelpCircle;
+      }
+      label = matchedCategory.label;
+      return (
+        <div className={cn(
+          'inline-flex items-center rounded-full gap-1.5',
+          color,
+          paddingClass,
+          className
+        )}>
+          <Icon size={iconSize} />
+          {showLabel && <span className={cn('font-medium', textClass)}>{label}</span>}
+        </div>
+      );
+    }
+  }
 
   switch (type) {
     case RecommendationType.BOOK:

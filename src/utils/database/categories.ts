@@ -60,6 +60,7 @@ export const addCustomCategory = async (category: CustomCategory): Promise<Custo
         type: category.type,
         label: category.label,
         color: category.color || 'bg-gray-50',
+        icon: category.icon || 'HelpCircle',
         user_id: userId
       }])
       .select()

@@ -32,14 +32,32 @@ const CategorySection = ({
     { type: RecommendationType.PODCAST, label: 'Podcasts', icon: Headphones as LucideIcon, color: 'bg-blue-100' },
   ];
   
+  // Get the corresponding Lucide icon component based on the icon name
+  const getIconComponent = (iconName: string): LucideIcon => {
+    switch (iconName) {
+      case 'Book': return Book;
+      case 'Film': return Film;
+      case 'Tv': return Tv;
+      case 'Utensils': return Utensils;
+      case 'Store': return Store;
+      case 'Headphones': return Headphones;
+      default: return HelpCircle;
+    }
+  };
+  
   const categories = [
     ...defaultCategories,
-    ...customCategories.map(cat => ({
-      type: cat.type,
-      label: cat.label,
-      icon: HelpCircle as LucideIcon,
-      color: cat.color || 'bg-gray-50'
-    }))
+    ...customCategories.map(cat => {
+      // Get the icon component based on the icon name or use HelpCircle as default
+      const IconComponent = cat.icon ? getIconComponent(cat.icon) : HelpCircle;
+      
+      return {
+        type: cat.type,
+        label: cat.label,
+        icon: IconComponent,
+        color: cat.color || 'bg-gray-50'
+      };
+    })
   ];
 
   return (

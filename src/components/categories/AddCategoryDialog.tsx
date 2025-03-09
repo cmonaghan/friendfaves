@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { addCustomCategory } from "@/utils/storage";
 import { queryKeys } from "@/hooks/useRecommendationQueries";
+import { Book, Film, Tv, Utensils, Store, Headphones, HelpCircle } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
 const colorOptions = [
   { value: "bg-blue-50", label: "Blue" },
@@ -25,9 +27,20 @@ const colorOptions = [
   { value: "bg-gray-50", label: "Gray" }
 ];
 
+const iconOptions = [
+  { value: "Book", label: "Book", icon: Book },
+  { value: "Film", label: "Film", icon: Film },
+  { value: "Tv", label: "TV", icon: Tv },
+  { value: "Utensils", label: "Utensils", icon: Utensils },
+  { value: "Store", label: "Store", icon: Store },
+  { value: "Headphones", label: "Headphones", icon: Headphones },
+  { value: "HelpCircle", label: "Other", icon: HelpCircle }
+];
+
 const categoryFormSchema = z.object({
   label: z.string().min(2, { message: "Category name must be at least 2 characters" }).max(30, { message: "Category name must be less than 30 characters" }),
   color: z.string().optional(),
+  icon: z.string().default("HelpCircle"),
 });
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
@@ -46,7 +59,8 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       label: "",
-      color: "bg-gray-50"
+      color: "bg-gray-50",
+      icon: "HelpCircle"
     }
   });
 
@@ -61,7 +75,8 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
       const newCategory = {
         type,
         label: values.label,
-        color: values.color || "bg-gray-50"
+        color: values.color || "bg-gray-50",
+        icon: values.icon || "HelpCircle"
       };
       
       const result = await addCustomCategory(newCategory);
@@ -94,8 +109,10 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
     }
   };
 
-  // Selected color preview styles
+  // Selected color and icon previews
   const selectedColor = form.watch("color") || "bg-gray-50";
+  const selectedIcon = form.watch("icon") || "HelpCircle";
+  const SelectedIconComponent = iconOptions.find(icon => icon.value === selectedIcon)?.icon || HelpCircle;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -127,6 +144,30 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
             
             <FormField
               control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category Icon</FormLabel>
+                  <div className="grid grid-cols-4 gap-2">
+                    {iconOptions.map((iconOption) => (
+                      <div
+                        key={iconOption.value}
+                        className={`rounded-md p-2 cursor-pointer text-center flex flex-col items-center transition-all ${
+                          field.value === iconOption.value ? "ring-2 ring-primary bg-primary/5" : "hover:bg-primary/5"
+                        }`}
+                        onClick={() => form.setValue("icon", iconOption.value)}
+                      >
+                        <iconOption.icon size={24} />
+                        <span className="text-xs mt-1">{iconOption.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
               name="color"
               render={({ field }) => (
                 <FormItem>
@@ -145,8 +186,10 @@ export function AddCategoryDialog({ open, onOpenChange }: AddCategoryDialogProps
                     ))}
                   </div>
                   <div className="flex items-center mt-2">
-                    <div className={`w-5 h-5 rounded-full ${selectedColor} mr-2`} />
-                    <span className="text-sm">Selected Color</span>
+                    <div className={`w-8 h-8 rounded-full ${selectedColor} mr-2 flex items-center justify-center`}>
+                      <SelectedIconComponent size={16} />
+                    </div>
+                    <span className="text-sm">Selected Appearance</span>
                   </div>
                 </FormItem>
               )}

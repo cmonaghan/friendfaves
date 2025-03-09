@@ -37,5 +37,6 @@ export interface CustomCategory {
   type: string;
   label: string;
   color?: string;
+  icon?: string;
   user_id?: string;
 }
