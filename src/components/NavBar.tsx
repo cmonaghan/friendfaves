@@ -1,4 +1,3 @@
-
 import { useLocation, Link } from "react-router-dom";
 import { Book, Home, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +28,8 @@ const NavBar = () => {
   }, []);
 
   const handleSignOut = async () => {
+    if (isSigningOut) return;
+    
     try {
       setIsSigningOut(true);
       await signOut();

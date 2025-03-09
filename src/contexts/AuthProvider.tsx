@@ -60,21 +60,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw error;
+      // First check if session exists before trying to sign out
+      if (!session) {
+        // If no session exists, just update local state and redirect
+        setSession(null);
+        setUser(null);
+        navigate("/");
+        return;
       }
       
-      // Clear session state
+      // Attempt to sign out
+      const { error } = await supabase.auth.signOut();
+      
+      // Always clear session state regardless of error
       setSession(null);
       setUser(null);
+      
+      // Log and handle error if it occurred
+      if (error) {
+        console.error("Supabase signOut error:", error);
+        // Don't throw the error - just log it and continue
+      }
       
       // Redirect to home page after sign out
       navigate("/");
     } catch (error) {
-      console.error("Error signing out:", error);
-      toast.error("Error signing out. Please try again.");
-      throw error; // Re-throw for handling in components
+      console.error("Error in signOut function:", error);
+      // Don't throw the error - just log it to prevent the promise rejection
+      // that would trigger the error toast in NavBar
     }
   };
 
