@@ -33,17 +33,23 @@ export const getPeople = async (): Promise<Person[]> => {
 export const addPerson = async (person: Person): Promise<Person> => {
   await initializeDatabaseStorage();
   
+  // Use a placeholder gray avatar instead of random avatars
+  const personWithPlaceholder = {
+    ...person,
+    avatar: person.avatar || '/placeholder.svg' // Use the placeholder SVG that comes with the project
+  };
+  
   // Get the current session
   const userAuthenticated = await isAuthenticated();
   
   if (userAuthenticated) {
     console.log('Adding user-specific person to database');
-    peopleStore.push(person);
+    peopleStore.push(personWithPlaceholder);
   } else {
     console.log('Adding mock person for unauthenticated user');
-    mockPeople.push(person);
+    mockPeople.push(personWithPlaceholder);
   }
   
-  console.log('Added person', person.id);
-  return person;
+  console.log('Added person', personWithPlaceholder.id);
+  return personWithPlaceholder;
 };
