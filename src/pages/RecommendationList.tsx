@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import RecommendationCard from '@/components/RecommendationCard';
@@ -211,8 +212,8 @@ const RecommendationList = () => {
       </div>
       
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="overflow-x-auto">
-          <TabsList className="mb-6 w-full max-w-fit mx-auto">
+        <div className="overflow-x-auto bg-secondary">
+          <TabsList className="mb-6 w-full max-w-fit mx-auto bg-secondary">
             <TabsTrigger value="all" className="flex-1">All</TabsTrigger>
             <TabsTrigger value={RecommendationType.BOOK} className="flex-1">Books</TabsTrigger>
             <TabsTrigger value={RecommendationType.MOVIE} className="flex-1">Movies</TabsTrigger>
