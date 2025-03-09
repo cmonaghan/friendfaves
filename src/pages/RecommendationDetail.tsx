@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from "sonner";
 import { Recommendation } from '@/utils/types';
-import { getRecommendationById, updateRecommendation, deleteRecommendation } from '@/utils/localStorage';
+import { getRecommendationById, updateRecommendation, deleteRecommendation } from '@/utils/storage';
 import { Button } from '@/components/ui/button';
 import { 
   ArrowLeft, 
@@ -36,12 +37,12 @@ const RecommendationDetail = () => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Fetch recommendation from localStorage
+    // Fetch recommendation from storage
     const fetchRecommendation = async () => {
       try {
         if (!id) return navigate('/not-found');
         
-        const data = getRecommendationById(id);
+        const data = await getRecommendationById(id);
         if (!data) return navigate('/not-found');
         
         setRecommendation(data);
@@ -58,37 +59,49 @@ const RecommendationDetail = () => {
     fetchRecommendation();
   }, [id, navigate]);
   
-  const handleToggleComplete = () => {
+  const handleToggleComplete = async () => {
     if (!recommendation) return;
     
-    // Update completed status in state
-    const newStatus = !isCompleted;
-    setIsCompleted(newStatus);
-    
-    // Update in localStorage
-    const updatedRecommendation = {
-      ...recommendation,
-      isCompleted: newStatus
-    };
-    
-    updateRecommendation(updatedRecommendation);
-    setRecommendation(updatedRecommendation);
-    
-    toast.success(
-      newStatus 
-        ? 'Marked as completed!' 
-        : 'Marked as not completed'
-    );
+    try {
+      // Update completed status in state
+      const newStatus = !isCompleted;
+      setIsCompleted(newStatus);
+      
+      // Update in storage
+      const updatedRecommendation = {
+        ...recommendation,
+        isCompleted: newStatus
+      };
+      
+      await updateRecommendation(updatedRecommendation);
+      setRecommendation(updatedRecommendation);
+      
+      toast.success(
+        newStatus 
+          ? 'Marked as completed!' 
+          : 'Marked as not completed'
+      );
+    } catch (error) {
+      console.error('Error updating recommendation:', error);
+      toast.error('Failed to update recommendation');
+      // Revert state on error
+      setIsCompleted(recommendation.isCompleted);
+    }
   };
   
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!id) return;
     
-    // Delete from localStorage
-    deleteRecommendation(id);
-    
-    toast.success('Recommendation deleted');
-    navigate('/recommendations');
+    try {
+      // Delete from storage
+      await deleteRecommendation(id);
+      
+      toast.success('Recommendation deleted');
+      navigate('/recommendations');
+    } catch (error) {
+      console.error('Error deleting recommendation:', error);
+      toast.error('Failed to delete recommendation');
+    }
   };
   
   if (loading) {

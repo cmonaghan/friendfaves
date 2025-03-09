@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
-import { initializeLocalStorage } from "./utils/localStorage";
+import { initializeStorage } from "./utils/storage";
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import RecommendationList from "./pages/RecommendationList";
@@ -16,9 +16,9 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Initialize local storage on app start
+  // Initialize storage on app start
   useEffect(() => {
-    initializeLocalStorage();
+    initializeStorage();
   }, []);
 
   return (

@@ -1,6 +1,7 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getRecommendations } from '@/utils/localStorage';
+import { getRecommendations } from '@/utils/storage';
 import RecommendationCard from '@/components/RecommendationCard';
 import { RecommendationType } from '@/utils/types';
 import { useStaggeredAnimation } from '@/utils/animations';
@@ -32,10 +33,23 @@ const RecommendationList = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showCompleted, setShowCompleted] = useState(true);
   const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Fetch recommendations from localStorage
+  // Fetch recommendations from storage
   useEffect(() => {
-    setRecommendations(getRecommendations());
+    const fetchRecommendations = async () => {
+      setLoading(true);
+      try {
+        const data = await getRecommendations();
+        setRecommendations(data);
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchRecommendations();
   }, []);
   
   // Update URL when tab changes
@@ -78,6 +92,16 @@ const RecommendationList = () => {
   // Staggered animation for cards
   const cardsRef = useRef<HTMLDivElement>(null);
   useStaggeredAnimation(cardsRef, 75, 100);
+  
+  if (loading) {
+    return (
+      <div className="max-w-screen-xl mx-auto py-12">
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <div className="animate-pulse">Loading recommendations...</div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="max-w-screen-xl mx-auto">

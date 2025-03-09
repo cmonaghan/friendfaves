@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RecommendationType, Person } from "@/utils/types";
-import { getPeople, addRecommendation, addPerson } from "@/utils/localStorage";
+import { getPeople, addRecommendation, addPerson } from "@/utils/storage";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
@@ -44,7 +45,23 @@ type FormValues = z.infer<typeof formSchema>;
 const AddRecommendationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddingNewFriend, setIsAddingNewFriend] = useState(false);
+  const [people, setPeople] = useState<Person[]>([]);
   const navigate = useNavigate();
+
+  // Fetch people when component mounts
+  useState(() => {
+    const loadPeople = async () => {
+      try {
+        const fetchedPeople = await getPeople();
+        setPeople(fetchedPeople);
+      } catch (error) {
+        console.error("Error fetching people:", error);
+        toast.error("Failed to load friends list");
+      }
+    };
+
+    loadPeople();
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -72,12 +89,12 @@ const AddRecommendationForm = () => {
           avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
         };
         
-        addPerson(newPerson);
+        await addPerson(newPerson);
         recommender = newPerson;
         console.log("Added new friend:", newPerson);
       } else {
-        const people = getPeople();
-        recommender = people.find(p => p.id === data.recommenderId)!;
+        const allPeople = await getPeople();
+        recommender = allPeople.find(p => p.id === data.recommenderId)!;
       }
       
       const newRecommendation = {
@@ -92,7 +109,7 @@ const AddRecommendationForm = () => {
         isCompleted: false
       };
       
-      addRecommendation(newRecommendation);
+      await addRecommendation(newRecommendation);
       console.log("Added recommendation:", newRecommendation);
       
       toast.success("Recommendation added successfully!");
@@ -114,8 +131,6 @@ const AddRecommendationForm = () => {
       form.setValue("recommenderId", value);
     }
   };
-
-  const people = getPeople();
 
   return (
     <Card className="w-full max-w-lg mx-auto shadow-sm">
