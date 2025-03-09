@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RecommendationType, Person, CustomCategory } from "@/utils/types";
-import { getPeople, addRecommendation, addPerson, addCustomCategory } from "@/utils/storage";
+import { getPeople, addPerson, addRecommendation, addCustomCategory } from "@/utils/storage";
 import { toast } from "sonner";
 import { UserPlus, Plus } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
@@ -37,7 +36,7 @@ const formSchema = z.object({
   type: z.nativeEnum(RecommendationType),
   recommenderId: z.string().min(1, { message: "Please select who recommended this" }),
   newFriendName: z.string().optional(),
-  reason: z.string().optional(), // Made optional
+  reason: z.string().optional(),
   notes: z.string().optional(),
   source: z.string().optional(),
   customCategory: z.string().optional(),
@@ -57,6 +56,7 @@ const AddRecommendationForm = () => {
     const loadPeople = async () => {
       try {
         const fetchedPeople = await getPeople();
+        console.log('Loaded people for dropdown:', fetchedPeople);
         setPeople(fetchedPeople);
       } catch (error) {
         console.error("Error fetching people:", error);
@@ -88,21 +88,21 @@ const AddRecommendationForm = () => {
       let recommender: Person;
       
       if (isAddingNewFriend && data.newFriendName) {
+        console.log("Adding new friend:", data.newFriendName);
         const newPerson: Person = {
           id: uuidv4(),
           name: data.newFriendName,
-          avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
+          avatar: `/placeholder.svg`
         };
         
-        await addPerson(newPerson);
-        recommender = newPerson;
-        console.log("Added new friend:", newPerson);
+        recommender = await addPerson(newPerson);
+        console.log("Added new friend result:", recommender);
+        
+        setPeople(prevPeople => [...prevPeople, recommender]);
       } else {
-        const allPeople = await getPeople();
-        recommender = allPeople.find(p => p.id === data.recommenderId)!;
+        recommender = people.find(p => p.id === data.recommenderId)!;
       }
       
-      // Save custom category if user is creating one
       if (isCustomCategory && data.type === RecommendationType.OTHER && data.customCategory && user) {
         const customCategory: CustomCategory = {
           type: data.customCategory,

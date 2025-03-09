@@ -69,23 +69,29 @@ export const addPerson = async (person: Person): Promise<Person> => {
   if (userAuthenticated) {
     console.log('Adding user-specific person to database');
     
-    // Add to Supabase database
+    // Add to Supabase database - ensure we're using upsert to handle existing profiles
     const { error } = await supabase
       .from('profiles')
-      .insert({
+      .upsert({
         id: personWithPlaceholder.id,
         name: personWithPlaceholder.name,
-        avatar_url: personWithPlaceholder.avatar
+        avatar_url: personWithPlaceholder.avatar,
+        // Add updated_at to match the schema requirements
+        updated_at: new Date().toISOString()
+      }, { 
+        onConflict: 'id',
+        ignoreDuplicates: false
       });
     
     if (error) {
       console.error('Error adding person to database:', error);
       // Still add to local store even if database insert fails
       peopleStore.push(personWithPlaceholder);
+    } else {
+      console.log('Successfully added person to database:', personWithPlaceholder.id);
+      // Add to local store for immediate use
+      peopleStore.push(personWithPlaceholder);
     }
-    
-    // We'll still add to the peopleStore to ensure it shows up immediately
-    peopleStore.push(personWithPlaceholder);
   } else {
     console.log('Adding mock person for unauthenticated user');
     // For mock data, we can keep any provided avatar or add one
