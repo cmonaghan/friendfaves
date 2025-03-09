@@ -41,12 +41,12 @@ const RecommendationsSection = ({
       <div className="flex justify-between items-end mb-6">
         <div>
           <h2 className="text-2xl font-bold mb-1">Recent Recommendations</h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 max-w-[90vw] overflow-x-auto pb-2">
             {categories.map(category => (
               <button
                 key={category.type}
                 onClick={() => setActiveTab(category.type)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === category.type 
                     ? 'bg-primary text-primary-foreground' 
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/70'

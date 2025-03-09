@@ -2,10 +2,11 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
-import { RecommendationType } from "@/utils/types";
+import { RecommendationType, CustomCategory } from "@/utils/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { RecommendationFormValues } from "./types";
+import { useCustomCategories } from "@/hooks/useRecommendationQueries";
 
 interface TitleAndTypeFieldsProps {
   form: UseFormReturn<RecommendationFormValues>;
@@ -13,6 +14,9 @@ interface TitleAndTypeFieldsProps {
 }
 
 export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsProps) {
+  // Fetch custom categories from the database
+  const { data: customCategories = [] } = useCustomCategories();
+
   return (
     <div className="space-y-6">
       <FormField
@@ -51,6 +55,14 @@ export function TitleAndTypeFields({ form, onTypeChange }: TitleAndTypeFieldsPro
                 <SelectItem value={RecommendationType.RECIPE}>Recipe</SelectItem>
                 <SelectItem value={RecommendationType.RESTAURANT}>Restaurant</SelectItem>
                 <SelectItem value={RecommendationType.PODCAST}>Podcast</SelectItem>
+                
+                {/* Render custom categories as options */}
+                {customCategories.map((category: CustomCategory) => (
+                  <SelectItem key={category.type} value={category.type}>
+                    {category.label}
+                  </SelectItem>
+                ))}
+                
                 <SelectItem value={RecommendationType.OTHER}>
                   <div className="flex items-center gap-2">
                     <Plus className="h-4 w-4" />

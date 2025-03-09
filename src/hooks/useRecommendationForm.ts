@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { RecommendationFormValues } from "@/components/recommendation-form/types";
 import { Person, RecommendationType, CustomCategory } from "@/utils/types";
 import { addRecommendation, addPerson, addCustomCategory } from "@/utils/storage";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "./useRecommendationQueries";
 
 export function useRecommendationForm(
   people: Person[],
@@ -14,6 +16,7 @@ export function useRecommendationForm(
 ) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const submitRecommendation = async (
     data: RecommendationFormValues,
@@ -41,31 +44,58 @@ export function useRecommendationForm(
         recommender = people.find(p => p.id === data.recommenderId)!;
       }
       
+      // Handle custom category if needed
       if (isCustomCategory && data.type === RecommendationType.OTHER && data.customCategory && isUser) {
         const customCategory: CustomCategory = {
-          type: data.customCategory,
+          type: data.customCategory.toLowerCase().replace(/\s+/g, '-'),
           label: data.customCategory,
           color: 'bg-gray-50'
         };
         
+        // Only add custom category if it doesn't exist
         await addCustomCategory(customCategory);
         console.log("Added custom category:", customCategory);
+        
+        // Invalidate custom categories query to refresh the data
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.customCategories
+        });
+      }
+      
+      let categoryForSaving: string | undefined;
+      
+      // For a custom type that's not OTHER, we're selecting an existing custom category
+      // For OTHER type with customCategory, we're creating a new category
+      if (data.type !== RecommendationType.OTHER && 
+          !Object.values(RecommendationType).includes(data.type as RecommendationType)) {
+        // Using an existing custom category
+        categoryForSaving = data.type;
+      } else if (isCustomCategory && data.customCategory) {
+        // Creating a new custom category
+        categoryForSaving = data.customCategory.toLowerCase().replace(/\s+/g, '-');
       }
       
       const newRecommendation = {
         id: uuidv4(),
         title: data.title,
-        type: data.type,
+        type: (Object.values(RecommendationType).includes(data.type as RecommendationType) 
+               ? data.type as RecommendationType 
+               : RecommendationType.OTHER),
         recommender: recommender,
         reason: data.reason || undefined,
         source: data.source || undefined,
         date: new Date().toISOString().split('T')[0],
         isCompleted: false,
-        customCategory: isCustomCategory && data.type === RecommendationType.OTHER ? data.customCategory : undefined
+        customCategory: categoryForSaving
       };
       
       await addRecommendation(newRecommendation);
       console.log("Added recommendation:", newRecommendation);
+      
+      // Invalidate recommendations query to refresh the data
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.recommendations
+      });
       
       toast.success("Recommendation added successfully!");
       navigate("/recommendations");

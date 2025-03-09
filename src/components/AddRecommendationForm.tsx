@@ -74,6 +74,8 @@ const AddRecommendationForm = () => {
 
   const handleTypeChange = (value: string) => {
     form.setValue("type", value as RecommendationType);
+    // Only show the custom category field if the type is "other"
+    // For existing custom categories, we don't need to show the input field
     setIsCustomCategory(value === RecommendationType.OTHER);
   };
 
