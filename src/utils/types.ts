@@ -4,6 +4,7 @@ export enum RecommendationType {
   MOVIE = "movie",
   TV = "tv",
   RECIPE = "recipe",
+  RESTAURANT = "restaurant",
   OTHER = "other"
 }
 
@@ -23,9 +24,10 @@ export interface Recommendation {
   title: string;
   type: RecommendationType;
   recommender: Person;
-  reason: string;
+  reason?: string; // Make reason optional
   notes?: string;
   source?: string;
   date: string;
   isCompleted: boolean;
+  customCategory?: string; // Add field for custom category
 }

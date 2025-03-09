@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -6,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RecommendationType, Person } from "@/utils/types";
 import { getPeople, addRecommendation, addPerson } from "@/utils/storage";
 import { toast } from "sonner";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Plus } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 
 import {
@@ -16,6 +17,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
@@ -34,9 +36,10 @@ const formSchema = z.object({
   type: z.nativeEnum(RecommendationType),
   recommenderId: z.string().min(1, { message: "Please select who recommended this" }),
   newFriendName: z.string().optional(),
-  reason: z.string().min(5, { message: "Please add why they recommended it" }),
+  reason: z.string().optional(), // Made optional
   notes: z.string().optional(),
   source: z.string().optional(),
+  customCategory: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -44,6 +47,7 @@ type FormValues = z.infer<typeof formSchema>;
 const AddRecommendationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddingNewFriend, setIsAddingNewFriend] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
   const navigate = useNavigate();
 
@@ -71,6 +75,7 @@ const AddRecommendationForm = () => {
       reason: "",
       notes: "",
       source: "",
+      customCategory: "",
     },
   });
 
@@ -100,11 +105,12 @@ const AddRecommendationForm = () => {
         title: data.title,
         type: data.type,
         recommender: recommender,
-        reason: data.reason,
+        reason: data.reason || undefined,
         notes: data.notes || undefined,
         source: data.source || undefined,
         date: new Date().toISOString().split('T')[0],
-        isCompleted: false
+        isCompleted: false,
+        customCategory: isCustomCategory && data.type === RecommendationType.OTHER ? data.customCategory : undefined
       };
       
       await addRecommendation(newRecommendation);
@@ -128,6 +134,11 @@ const AddRecommendationForm = () => {
       setIsAddingNewFriend(false);
       form.setValue("recommenderId", value);
     }
+  };
+
+  const handleTypeChange = (value: string) => {
+    form.setValue("type", value as RecommendationType);
+    setIsCustomCategory(value === RecommendationType.OTHER);
   };
 
   return (
@@ -160,7 +171,7 @@ const AddRecommendationForm = () => {
                   <FormItem>
                     <FormLabel>Type</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={handleTypeChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
@@ -173,7 +184,13 @@ const AddRecommendationForm = () => {
                         <SelectItem value={RecommendationType.MOVIE}>Movie</SelectItem>
                         <SelectItem value={RecommendationType.TV}>TV Show</SelectItem>
                         <SelectItem value={RecommendationType.RECIPE}>Recipe</SelectItem>
-                        <SelectItem value={RecommendationType.OTHER}>Other</SelectItem>
+                        <SelectItem value={RecommendationType.RESTAURANT}>Restaurant</SelectItem>
+                        <SelectItem value={RecommendationType.OTHER}>
+                          <div className="flex items-center gap-2">
+                            <Plus className="h-4 w-4" />
+                            <span>Custom Category</span>
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -231,13 +248,29 @@ const AddRecommendationForm = () => {
                 )}
               />
             )}
+            
+            {isCustomCategory && (
+              <FormField
+                control={form.control}
+                name="customCategory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Custom Category Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="E.g. Podcast, Board Game, etc." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
               name="reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Why they recommended it</FormLabel>
+                  <FormLabel>Why they recommended it (optional)</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Enter their reason for recommending it"

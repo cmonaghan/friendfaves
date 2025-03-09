@@ -1,6 +1,6 @@
 
 import { RecommendationType } from "@/utils/types";
-import { Book, Film, Tv, Utensils, HelpCircle } from "lucide-react";
+import { Book, Film, Tv, Utensils, Store, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CategoryTagProps {
@@ -8,16 +8,17 @@ interface CategoryTagProps {
   className?: string;
   showLabel?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  customCategory?: string;
 }
 
-const CategoryTag = ({ type, className, showLabel = true, size = 'md' }: CategoryTagProps) => {
+const CategoryTag = ({ type, className, showLabel = true, size = 'md', customCategory }: CategoryTagProps) => {
   const iconSize = size === 'sm' ? 14 : size === 'md' ? 16 : 20;
   const paddingClass = size === 'sm' ? 'p-1' : size === 'md' ? 'p-1.5' : 'p-2';
   const textClass = size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base';
   
   let Icon = HelpCircle;
   let color = 'bg-gray-100 text-gray-700';
-  let label = 'Other';
+  let label = customCategory || 'Other';
 
   switch (type) {
     case RecommendationType.BOOK:
@@ -39,6 +40,15 @@ const CategoryTag = ({ type, className, showLabel = true, size = 'md' }: Categor
       Icon = Utensils;
       color = 'bg-green-50 text-green-700';
       label = 'Recipe';
+      break;
+    case RecommendationType.RESTAURANT:
+      Icon = Store;
+      color = 'bg-amber-50 text-amber-700';
+      label = 'Restaurant';
+      break;
+    case RecommendationType.OTHER:
+      Icon = HelpCircle;
+      label = customCategory || 'Other';
       break;
   }
 

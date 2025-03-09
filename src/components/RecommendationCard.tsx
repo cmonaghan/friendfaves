@@ -14,7 +14,7 @@ interface RecommendationCardProps {
 
 const RecommendationCard = forwardRef<HTMLDivElement, RecommendationCardProps>(
   ({ recommendation, className }, ref) => {
-    const { id, title, type, recommender, reason, date, isCompleted } = recommendation;
+    const { id, title, type, recommender, reason, date, isCompleted, customCategory } = recommendation;
     
     // Format date
     const formattedDate = new Date(date).toLocaleDateString('en-US', {
@@ -36,7 +36,7 @@ const RecommendationCard = forwardRef<HTMLDivElement, RecommendationCardProps>(
         
         <div className="p-4 sm:p-5">
           <div className="flex justify-between items-start mb-3">
-            <CategoryTag type={type} size="sm" />
+            <CategoryTag type={type} size="sm" customCategory={customCategory} />
             
             {isCompleted && (
               <span className="text-green-500 flex items-center gap-1 text-sm">
@@ -50,9 +50,11 @@ const RecommendationCard = forwardRef<HTMLDivElement, RecommendationCardProps>(
             {title}
           </h3>
           
-          <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
-            {reason}
-          </p>
+          {reason && (
+            <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
+              {reason}
+            </p>
+          )}
           
           <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
             <Avatar person={recommender} size="sm" />
