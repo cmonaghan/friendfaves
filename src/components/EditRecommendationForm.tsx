@@ -79,14 +79,32 @@ const EditRecommendationForm = ({ recommendation }: EditRecommendationFormProps)
         throw new Error("Recommender not found");
       }
       
-      const updatedRecommendation = {
+      // Determine if we're using a standard type or custom type
+      let recommendationType: RecommendationType;
+      let customCategoryValue: string | undefined = undefined;
+      
+      // Check if the type is one of the standard enum values
+      if (Object.values(RecommendationType).includes(data.type as RecommendationType)) {
+        recommendationType = data.type as RecommendationType;
+      } else {
+        // If it's a custom category already saved as a type
+        recommendationType = RecommendationType.OTHER;
+        customCategoryValue = data.type;
+      }
+      
+      // If it's a new custom category being entered
+      if (isCustomCategory && data.customCategory) {
+        customCategoryValue = data.customCategory;
+      }
+      
+      const updatedRecommendation: Recommendation = {
         ...recommendation,
         title: data.title,
-        type: data.type,
+        type: recommendationType,
         recommender: recommender,
         reason: data.reason || undefined,
         source: data.source || undefined,
-        customCategory: isCustomCategory ? data.customCategory : undefined
+        customCategory: customCategoryValue
       };
       
       await updateRecommendation(updatedRecommendation);
@@ -121,7 +139,9 @@ const EditRecommendationForm = ({ recommendation }: EditRecommendationFormProps)
   };
 
   const handleTypeChange = (value: string) => {
-    form.setValue("type", value as RecommendationType);
+    form.setValue("type", value, {
+      shouldValidate: false  // Avoid triggering validation on programmatic changes
+    });
     setIsCustomCategory(value === RecommendationType.OTHER);
   };
 
