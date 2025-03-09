@@ -213,7 +213,11 @@ const RecommendationList = () => {
             <TabsTrigger value={RecommendationType.RECIPE}>Recipes</TabsTrigger>
             <TabsTrigger value={RecommendationType.RESTAURANT}>Restaurants</TabsTrigger>
             <TabsTrigger value={RecommendationType.PODCAST}>Podcasts</TabsTrigger>
-            <TabsTrigger value={RecommendationType.OTHER}>Other</TabsTrigger>
+            {/* Only show "Other" category if there are recommendations that don't have a customCategory */}
+            {recommendations.some(rec => rec.type === RecommendationType.OTHER && !rec.customCategory) && (
+              <TabsTrigger value={RecommendationType.OTHER}>Other</TabsTrigger>
+            )}
+            {/* List all custom categories as their own tabs */}
             {customCategories.map(category => (
               <TabsTrigger 
                 key={category.type} 
