@@ -1,12 +1,21 @@
 
 import { useLocation, Link } from "react-router-dom";
-import { Book, Home, Plus } from "lucide-react";
+import { Book, Home, Plus, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthProvider";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 const NavBar = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +25,11 @@ const NavBar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+  };
 
   const navLinks = [
     { path: "/", label: "Home", icon: Home },
@@ -58,13 +72,35 @@ const NavBar = () => {
             ))}
           </nav>
           
-          <div className="flex">
-            <Button asChild size="sm" className="gap-1 rounded-full shadow-sm">
-              <Link to="/add">
-                <Plus size={16} />
-                <span>Add</span>
-              </Link>
-            </Button>
+          <div className="flex items-center gap-2">
+            {user ? (
+              <>
+                <Button asChild size="sm" className="gap-1 rounded-full shadow-sm">
+                  <Link to="/add">
+                    <Plus size={16} />
+                    <span>Add</span>
+                  </Link>
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <User size={18} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sign out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <Button asChild size="sm">
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>

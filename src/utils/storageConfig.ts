@@ -1,6 +1,6 @@
 
 // Whether we're running in demo mode (using localStorage) or production mode (using a database)
-export const isDemo = true; // Set to false to use database storage
+export const isDemo = false; // Set to false to use database storage
 
 // Storage provider types
 export enum StorageProvider {

@@ -12,6 +12,9 @@ import RecommendationList from "./pages/RecommendationList";
 import RecommendationDetail from "./pages/RecommendationDetail";
 import AddRecommendation from "./pages/AddRecommendation";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import { AuthProvider } from "./contexts/AuthProvider";
+import RequireAuth from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
 
@@ -27,13 +30,43 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout><Index /></Layout>} />
-            <Route path="/recommendations" element={<Layout><RecommendationList /></Layout>} />
-            <Route path="/recommendation/:id" element={<Layout><RecommendationDetail /></Layout>} />
-            <Route path="/add" element={<Layout><AddRecommendation /></Layout>} />
-            <Route path="*" element={<Layout><NotFound /></Layout>} />
-          </Routes>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Layout><Index /></Layout>} />
+              <Route path="/auth" element={<Layout><Auth /></Layout>} />
+              <Route 
+                path="/recommendations" 
+                element={
+                  <Layout>
+                    <RequireAuth>
+                      <RecommendationList />
+                    </RequireAuth>
+                  </Layout>
+                } 
+              />
+              <Route 
+                path="/recommendation/:id" 
+                element={
+                  <Layout>
+                    <RequireAuth>
+                      <RecommendationDetail />
+                    </RequireAuth>
+                  </Layout>
+                } 
+              />
+              <Route 
+                path="/add" 
+                element={
+                  <Layout>
+                    <RequireAuth>
+                      <AddRecommendation />
+                    </RequireAuth>
+                  </Layout>
+                } 
+              />
+              <Route path="*" element={<Layout><NotFound /></Layout>} />
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
