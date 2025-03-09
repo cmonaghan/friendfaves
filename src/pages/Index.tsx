@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
@@ -169,12 +168,14 @@ const Index = () => {
       {!user && <HeroSection />}
 
       <div className="mb-4">
-        <Button asChild className="flex items-center gap-2 w-auto">
-          <Link to="/add">
-            <Plus size={16} />
-            Add Recommendation
-          </Link>
-        </Button>
+        <div className="inline-block">
+          <Button asChild className="flex items-center gap-2">
+            <Link to="/add">
+              <Plus size={16} />
+              Add Recommendation
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <CategorySection 
