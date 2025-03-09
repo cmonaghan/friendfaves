@@ -43,9 +43,12 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
     // Map the database records to our Recommendation type
     const recommendations: Recommendation[] = data.map((rec) => {
       // Find the recommender by ID in our people list
-      const recommender = people.find(person => person.id === rec.recommender_id) || {
+      const recommender = people.find(person => person.id === rec.recommender_id);
+      
+      // If we can't find the recommender, create a fallback with a friendly name
+      const fallbackRecommender = {
         id: rec.recommender_id,
-        name: rec.recommender_id,
+        name: `Friend ${rec.recommender_id.substring(0, 4)}`, // Create a more friendly name from the ID
         avatar: '/placeholder.svg'
       };
       
@@ -53,7 +56,7 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
         id: rec.id,
         title: rec.title,
         type: rec.type as RecommendationType,
-        recommender: recommender,
+        recommender: recommender || fallbackRecommender,
         reason: rec.reason || undefined,
         notes: rec.notes || undefined,
         source: rec.source || undefined,
@@ -105,9 +108,12 @@ export const getRecommendationById = async (id: string): Promise<Recommendation 
     const people = await getPeople();
     
     // Find the recommender by ID in our people list
-    const recommender = people.find(person => person.id === data.recommender_id) || {
+    const recommender = people.find(person => person.id === data.recommender_id);
+    
+    // If we can't find the recommender, create a fallback with a friendly name
+    const fallbackRecommender = {
       id: data.recommender_id,
-      name: data.recommender_id,
+      name: `Friend ${data.recommender_id.substring(0, 4)}`, // Create a more friendly name from the ID
       avatar: '/placeholder.svg'
     };
     
@@ -116,7 +122,7 @@ export const getRecommendationById = async (id: string): Promise<Recommendation 
       id: data.id,
       title: data.title,
       type: data.type as RecommendationType,
-      recommender: recommender,
+      recommender: recommender || fallbackRecommender,
       reason: data.reason || undefined,
       notes: data.notes || undefined,
       source: data.source || undefined,
