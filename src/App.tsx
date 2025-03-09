@@ -40,13 +40,7 @@ const App = () => {
               />
               <Route 
                 path="/recommendation/:id" 
-                element={
-                  <Layout>
-                    <RequireAuth>
-                      <RecommendationDetail />
-                    </RequireAuth>
-                  </Layout>
-                } 
+                element={<Layout><RecommendationDetail /></Layout>} 
               />
               <Route 
                 path="/add" 

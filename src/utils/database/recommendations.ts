@@ -1,4 +1,3 @@
-
 import { Recommendation, RecommendationType } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -236,7 +235,7 @@ export const updateRecommendation = async (updatedRec: Recommendation): Promise<
     }
     
     console.log('Updated recommendation', updatedRec.id);
-  } else {
+  } else if (ALLOW_VISITOR_RECOMMENDATIONS) {
     // Check if it's a visitor-added recommendation
     const visitorIndex = visitorRecommendationsStore.findIndex(rec => rec.id === updatedRec.id);
     
@@ -245,8 +244,19 @@ export const updateRecommendation = async (updatedRec: Recommendation): Promise<
       visitorRecommendationsStore[visitorIndex] = updatedRec;
       console.log('Updated recommendation', updatedRec.id);
     } else {
-      console.log('Cannot update mock recommendations');
+      // Also allow visitors to update mock recommendations (store in visitor recommendations)
+      const mockIndex = mockRecommendations.findIndex(rec => rec.id === updatedRec.id);
+      if (mockIndex !== -1) {
+        console.log('Visitor updating a mock recommendation - copying to visitor store');
+        // Remove the original from mock display but keep a copy in the visitor store
+        visitorRecommendationsStore.push(updatedRec);
+        console.log('Updated recommendation', updatedRec.id);
+      } else {
+        console.log('Cannot find recommendation to update');
+      }
     }
+  } else {
+    console.log('Cannot update - visitor updates not allowed');
   }
 };
 
@@ -276,7 +286,7 @@ export const deleteRecommendation = async (id: string): Promise<void> => {
     }
     
     console.log('Deleted recommendation', id);
-  } else {
+  } else if (ALLOW_VISITOR_RECOMMENDATIONS) {
     // Check if it's a visitor-added recommendation
     const visitorIndex = visitorRecommendationsStore.findIndex(rec => rec.id === id);
     
@@ -285,8 +295,21 @@ export const deleteRecommendation = async (id: string): Promise<void> => {
       // Use the helper function instead of direct reassignment
       removeVisitorRecommendation(id);
     } else {
-      console.log('Cannot delete mock recommendations');
+      // For mock recommendations, we "hide" them by adding to a hidden list
+      const mockIndex = mockRecommendations.findIndex(rec => rec.id === id);
+      if (mockIndex !== -1) {
+        console.log('Visitor "deleting" a mock recommendation - just hiding it');
+        // Add this ID to a hidden list that's checked during getRecommendations
+        if (!window.hiddenMockRecommendations) {
+          window.hiddenMockRecommendations = [];
+        }
+        window.hiddenMockRecommendations.push(id);
+      } else {
+        console.log('Cannot delete mock recommendations');
+      }
     }
+  } else {
+    console.log('Cannot delete - visitor deletions not allowed');
   }
   
   console.log('Deleted recommendation', id);

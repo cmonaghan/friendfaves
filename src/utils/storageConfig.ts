@@ -29,5 +29,5 @@ export const getIsAuthenticated = () => {
 // Show test data for visitors only, not for authenticated users
 export const SHOW_TEST_DATA_FOR_VISITORS = true;
 
-// Allow non-authenticated users to add recommendations (stored only in memory/session)
+// Allow non-authenticated users to add and edit recommendations (stored only in memory/session)
 export const ALLOW_VISITOR_RECOMMENDATIONS = true;

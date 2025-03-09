@@ -5,9 +5,10 @@ import { useAuth } from "@/contexts/AuthProvider";
 
 interface RequireAuthProps {
   children: React.ReactNode;
+  redirectToLogin?: boolean; // Make redirection optional
 }
 
-const RequireAuth = ({ children }: RequireAuthProps) => {
+const RequireAuth = ({ children, redirectToLogin = true }: RequireAuthProps) => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,13 +16,13 @@ const RequireAuth = ({ children }: RequireAuthProps) => {
 
   useEffect(() => {
     if (!isLoading) {
-      if (!user) {
-        // Redirect to login if not authenticated
+      if (!user && redirectToLogin) {
+        // Redirect to login if not authenticated and redirectToLogin is true
         navigate("/auth", { state: { from: location.pathname } });
       }
       setIsChecking(false);
     }
-  }, [user, isLoading, navigate, location]);
+  }, [user, isLoading, navigate, location, redirectToLogin]);
 
   if (isLoading || isChecking) {
     return (
