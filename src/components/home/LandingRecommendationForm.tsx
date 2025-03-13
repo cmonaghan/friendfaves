@@ -1,11 +1,11 @@
 
 import { useState, useEffect } from 'react';
 import { RecommendationFormValues } from '@/components/recommendation-form/types';
-import TitleAndTypeFields from '@/components/recommendation-form/TitleAndTypeFields';
-import RecommenderField from '@/components/recommendation-form/RecommenderField';
-import ReasonSourceFields from '@/components/recommendation-form/ReasonSourceFields';
-import FormActions from '@/components/recommendation-form/FormActions';
-import CustomCategoryField from '@/components/recommendation-form/CustomCategoryField';
+import { TitleAndTypeFields } from '@/components/recommendation-form/TitleAndTypeFields';
+import { RecommenderField } from '@/components/recommendation-form/RecommenderField';
+import { ReasonSourceFields } from '@/components/recommendation-form/ReasonSourceFields';
+import { FormActions } from '@/components/recommendation-form/FormActions';
+import { CustomCategoryField } from '@/components/recommendation-form/CustomCategoryField';
 import { getPeople } from '@/utils/storage';
 import { useRecommendationForm } from '@/hooks/useRecommendationForm';
 import { Person, RecommendationType } from '@/utils/types';
@@ -62,28 +62,35 @@ const LandingRecommendationForm = () => {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <TitleAndTypeFields 
           form={form} 
-          isCustomCategory={isCustomCategory} 
-          setIsCustomCategory={setIsCustomCategory} 
+          onTypeChange={(value) => {
+            form.setValue("type", value, { shouldValidate: false });
+            setIsCustomCategory(value === RecommendationType.OTHER);
+          }}
         />
         
         <RecommenderField
           form={form}
           people={people}
           isAddingNewFriend={isAddingNewFriend}
-          setIsAddingNewFriend={setIsAddingNewFriend}
+          onRecommenderChange={(value) => {
+            if (value === "new") {
+              setIsAddingNewFriend(true);
+              form.setValue("recommenderId", "new");
+            } else {
+              setIsAddingNewFriend(false);
+              form.setValue("recommenderId", value);
+            }
+          }}
         />
         
-        {isCustomCategory && form.watch('type') === RecommendationType.OTHER && (
-          <CustomCategoryField form={form} />
-        )}
+        <CustomCategoryField 
+          form={form} 
+          isCustomCategory={isCustomCategory}
+        />
         
         <ReasonSourceFields form={form} />
         
-        <FormActions 
-          isSubmitting={isSubmitting} 
-          onReset={resetForm}
-          submitLabel="Save Recommendation"
-        />
+        <FormActions isSubmitting={isSubmitting} />
       </form>
     </Card>
   );
