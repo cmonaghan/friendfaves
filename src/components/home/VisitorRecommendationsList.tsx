@@ -1,14 +1,10 @@
 
-import { useState, useEffect } from 'react';
-import { getRecommendations } from '@/utils/storage';
-import VisitorRecommendationsList from './VisitorRecommendationsList';
-import VisitorLimitAlert from './VisitorLimitAlert';
-import CreateAccountPrompt from './CreateAccountPrompt';
+import { useEffect, useState } from 'react';
 import { Recommendation } from '@/utils/types';
+import { getRecommendations } from '@/utils/storage';
+import RecommendationCard from '@/components/RecommendationCard';
 
-const MAX_VISITOR_RECOMMENDATIONS = 15;
-
-const VisitorRecommendationsManager = () => {
+const VisitorRecommendationsList = () => {
   const [visitorRecommendations, setVisitorRecommendations] = useState<Recommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,27 +44,21 @@ const VisitorRecommendationsManager = () => {
     return <div className="flex justify-center py-8">Loading...</div>;
   }
 
-  const visitorRecommendationsCount = visitorRecommendations.length;
-
-  if (visitorRecommendationsCount >= MAX_VISITOR_RECOMMENDATIONS) {
-    return <VisitorLimitAlert recommendationsCount={visitorRecommendationsCount} />;
+  if (visitorRecommendations.length === 0) {
+    return (
+      <div className="text-center text-muted-foreground mt-4">
+        No recommendations saved yet. Use the form above to add your first recommendation.
+      </div>
+    );
   }
 
   return (
-    <div className="mt-8 mb-12">
-      {visitorRecommendationsCount > 0 ? (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-center">Your Recommendations</h2>
-          <VisitorRecommendationsList />
-          {visitorRecommendationsCount > 0 && <CreateAccountPrompt />}
-        </div>
-      ) : (
-        <div className="text-center text-muted-foreground mt-4">
-          No recommendations saved yet. Use the form above to add your first recommendation.
-        </div>
-      )}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+      {visitorRecommendations.map(recommendation => (
+        <RecommendationCard key={recommendation.id} recommendation={recommendation} />
+      ))}
     </div>
   );
 };
 
-export default VisitorRecommendationsManager;
+export default VisitorRecommendationsList;
