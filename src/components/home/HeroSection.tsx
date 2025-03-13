@@ -6,6 +6,13 @@ import { useAuth } from '@/contexts/AuthProvider';
 const HeroSection = () => {
   const { user } = useAuth();
   
+  const scrollToForm = () => {
+    const formElement = document.querySelector('#recommendation-form');
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+  
   return (
     <section className="mb-8 py-12 sm:py-16 px-4">
       <div className="max-w-3xl mx-auto text-center">
@@ -16,10 +23,12 @@ const HeroSection = () => {
           Keep track of all the amazing books, movies, TV shows, podcasts, and restaurants that your friends recommend to you in one beautiful place.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg" className="rounded-full px-8">
-            <Link to="/auth">
-              Get Started
-            </Link>
+          <Button 
+            size="lg" 
+            className="rounded-full px-8"
+            onClick={scrollToForm}
+          >
+            Get Started
           </Button>
           <Button asChild variant="outline" size="lg" className="rounded-full px-8">
             <Link to="/recommendations">
