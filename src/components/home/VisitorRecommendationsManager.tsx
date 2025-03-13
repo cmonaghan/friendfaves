@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -86,16 +87,13 @@ const VisitorRecommendationsManager = () => {
               <RecommendationCard key={recommendation.id} recommendation={recommendation} />
             ))}
           </div>
-          <div className="flex justify-center mt-8">
-            <Button asChild variant="outline" className="mx-2">
-              <Link to="/recommendations">View All ({visitorRecommendationsCount})</Link>
-            </Button>
-            {visitorRecommendationsCount < MAX_VISITOR_RECOMMENDATIONS && (
-              <div className="text-muted-foreground flex items-center ml-4">
-                {visitorRecommendationsCount} of {MAX_VISITOR_RECOMMENDATIONS} recommendations saved
-              </div>
-            )}
-          </div>
+          {visitorRecommendationsCount > 0 && (
+            <div className="flex justify-center mt-8">
+              <Button asChild className="px-6">
+                <Link to="/auth">Create an account to save these recommendations</Link>
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center text-muted-foreground mt-4">
