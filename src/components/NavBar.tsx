@@ -54,9 +54,9 @@ const NavBar = () => {
     // For authenticated users, only show Recommendations
     { path: "/recommendations", label: "Recommendations", icon: Book }
   ] : [
-    // For unauthenticated users, show both Home and Recommendations
+    // For unauthenticated users, show both Home and Demo
     { path: "/", label: "Home", icon: Home },
-    { path: "/recommendations", label: "Recommendations", icon: Book }
+    { path: "/recommendations", label: "Demo", icon: Book }
   ];
 
   return (

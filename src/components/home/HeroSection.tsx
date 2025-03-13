@@ -23,7 +23,7 @@ const HeroSection = () => {
           </Button>
           <Button asChild variant="outline" size="lg" className="rounded-full px-8">
             <Link to="/recommendations">
-              Try the Demo
+              See the Demo
             </Link>
           </Button>
         </div>
