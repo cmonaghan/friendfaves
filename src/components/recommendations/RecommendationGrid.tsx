@@ -5,6 +5,7 @@ import RecommendationCard from '@/components/RecommendationCard';
 import { useStaggeredAnimation } from '@/utils/animations';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthProvider';
+import { Link } from 'react-router-dom';
 
 interface RecommendationGridProps {
   recommendations: Recommendation[];
@@ -38,15 +39,22 @@ const RecommendationGrid = ({
       <p className="text-muted-foreground mb-6">
         {searchQuery ? 'Try changing your search query or filters' : 'Add your first recommendation to get started'}
       </p>
-      {user && (
-        <Button asChild>
-          <a href="/add">Add Recommendation</a>
-        </Button>
-      )}
+      
+      <Button asChild>
+        <Link to="/add">
+          {user 
+            ? 'Add Recommendation' 
+            : 'Create Temporary Recommendation'
+          }
+        </Link>
+      </Button>
+      
       {!user && (
-        <Button asChild>
-          <a href="/auth">Sign in to add recommendations</a>
-        </Button>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Any recommendations you create will be stored temporarily in this browser session.
+          <br />
+          <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to save them permanently.
+        </p>
       )}
     </div>
   );

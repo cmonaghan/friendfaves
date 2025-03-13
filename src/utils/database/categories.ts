@@ -1,27 +1,18 @@
 
 import { CustomCategory } from '../types';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  initializeDatabaseStorage, 
-  visitorCustomCategoriesStore,
-  addVisitorCustomCategory
-} from './initialization';
+import { isAuthenticated } from './session';
+import { visitorCustomCategoriesStore, addVisitorCustomCategory } from './initialization';
 import { ALLOW_VISITOR_RECOMMENDATIONS } from '../storageConfig';
-import { getCurrentSession, isAuthenticated, getCurrentUserId } from './session';
 
 /**
- * Gets all custom categories for the current user
+ * Gets all custom categories
  */
 export const getCustomCategories = async (): Promise<CustomCategory[]> => {
-  await initializeDatabaseStorage();
-  
-  // Get the current session
   const userAuthenticated = await isAuthenticated();
   
   if (userAuthenticated) {
-    console.log('Fetching user-specific custom categories from database');
-    
-    // Fetch custom categories from Supabase for authenticated users
+    // Fetch categories from database
     const { data, error } = await supabase
       .from('custom_categories')
       .select('*')
@@ -32,16 +23,20 @@ export const getCustomCategories = async (): Promise<CustomCategory[]> => {
       return [];
     }
     
-    // Map the data to include default icon if not present in the database
-    return (data || []).map(category => ({
-      ...category,
-      // Ensure the icon property is a string
-      icon: typeof category.icon === 'string' ? category.icon : 'HelpCircle'
+    // Map database results to CustomCategory type, ensuring icon property is handled
+    const categories: CustomCategory[] = data.map(category => ({
+      id: category.id,
+      type: category.type,
+      label: category.label,
+      color: category.color || 'bg-gray-50',
+      // Add a default icon if not present in the database
+      icon: 'HelpCircle'
     }));
+    
+    return categories;
   } else {
-    console.log('Fetching in-memory custom categories for unauthenticated visitor', visitorCustomCategoriesStore);
-    // Return visitor-created custom categories for the current session
-    return [...visitorCustomCategoriesStore];
+    // For unauthenticated visitors, return the in-memory categories
+    return visitorCustomCategoriesStore;
   }
 };
 
@@ -49,77 +44,51 @@ export const getCustomCategories = async (): Promise<CustomCategory[]> => {
  * Adds a new custom category
  */
 export const addCustomCategory = async (category: CustomCategory): Promise<CustomCategory | null> => {
-  await initializeDatabaseStorage();
-  
-  // Get the current session
   const userAuthenticated = await isAuthenticated();
-  const userId = await getCurrentUserId();
   
-  if (userAuthenticated && userId) {
-    console.log('Adding user-specific custom category to database');
-    
-    try {
-      // Check if the table has the 'icon' column
-      const { data: columnInfo, error: columnError } = await supabase
-        .from('custom_categories')
-        .select('*')
-        .limit(1);
-        
-      // Only include the icon field if it exists in the database schema
-      const hasIconColumn = columnInfo && columnInfo.length > 0 && 'icon' in columnInfo[0];
-      
-      // Create base category data
-      const categoryData: any = {
+  if (userAuthenticated) {
+    // Add to database for authenticated users
+    const { data, error } = await supabase
+      .from('custom_categories')
+      .insert([{
         type: category.type,
         label: category.label,
         color: category.color || 'bg-gray-50',
-        user_id: userId
-      };
-      
-      // Only add icon if the column exists
-      if (hasIconColumn) {
-        categoryData.icon = category.icon || 'HelpCircle';
-      }
-      
-      console.log('Saving category with data:', categoryData);
-      
-      // Insert the custom category into Supabase
-      const { data, error } = await supabase
-        .from('custom_categories')
-        .insert([categoryData])
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error adding custom category:', error);
-        return null;
-      }
-      
-      // Return the category with the default icon if not in database
-      return {
-        ...data,
-        // Ensure the icon property is a string
-        icon: (typeof data.icon === 'string' ? data.icon : '') || category.icon || 'HelpCircle'
-      };
-    } catch (error) {
-      console.error('Error in addCustomCategory:', error);
+        // Ensure icon is stored if present, otherwise use default
+        icon: category.icon || 'HelpCircle'
+      }])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error adding custom category:', error);
       return null;
     }
-  } else if (ALLOW_VISITOR_RECOMMENDATIONS) {
-    console.log('Adding in-memory custom category for unauthenticated visitor');
     
-    // Store in the visitor-specific in-memory store
-    const newCategory = {
-      ...category,
-      id: `temp-${Date.now()}`
+    // Map database result to CustomCategory type
+    const addedCategory: CustomCategory = {
+      id: data.id,
+      type: data.type,
+      label: data.label,
+      color: data.color || 'bg-gray-50',
+      // Add a default icon if not present in the database
+      icon: 'HelpCircle'
     };
     
-    // Add to the visitor custom categories store
-    addVisitorCustomCategory(newCategory);
+    return addedCategory;
+  } else if (ALLOW_VISITOR_RECOMMENDATIONS) {
+    // For unauthenticated visitors, store in memory
+    const newCategoryWithId = {
+      ...category,
+      id: crypto.randomUUID() // Generate a temporary ID
+    };
     
-    console.log('Updated visitor categories:', visitorCustomCategoriesStore);
-    return newCategory;
+    // Add to the in-memory store
+    addVisitorCustomCategory(newCategoryWithId);
+    
+    return newCategoryWithId;
   } else {
-    throw new Error('Unauthorized: Cannot add custom categories without logging in');
+    console.log('Unauthorized: Cannot add categories without logging in');
+    return null;
   }
 };

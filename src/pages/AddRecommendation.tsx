@@ -14,13 +14,14 @@ const AddRecommendation = () => {
             Save something a friend has recommended to you
           </p>
         ) : (
-          <p className="text-muted-foreground">
-            Try out adding a recommendation. It will only be visible to you in this browser session.
-            <br />
-            <span className="text-sm mt-1 inline-block font-medium text-primary">
+          <div>
+            <p className="text-muted-foreground">
+              Try out adding a recommendation. It will only be visible to you in this browser session.
+            </p>
+            <p className="text-sm mt-2 inline-block font-medium text-primary">
               Sign in to permanently save your recommendations!
-            </span>
-          </p>
+            </p>
+          </div>
         )}
       </div>
       

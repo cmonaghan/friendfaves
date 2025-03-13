@@ -11,6 +11,7 @@ import RecommendationTabs from '@/components/recommendations/RecommendationTabs'
 import RecommendationGrid from '@/components/recommendations/RecommendationGrid';
 import { useRecommendations, useCustomCategories } from '@/hooks/useRecommendationQueries';
 import { useFilteredRecommendations } from '@/hooks/useFilteredRecommendations';
+import { Link } from 'react-router-dom';
 
 const RecommendationList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -100,18 +101,16 @@ const RecommendationList = () => {
           <p className="text-muted-foreground">
             {user 
               ? "Browse and filter all your saved recommendations" 
-              : "Browse our sample recommendations or sign in to create your own"}
+              : "Browse our sample recommendations or create your own temporary ones"}
           </p>
         </div>
         
-        {user && (
-          <Button asChild className="flex items-center gap-2">
-            <a href="/add">
-              <Plus size={16} />
-              Add Recommendation
-            </a>
-          </Button>
-        )}
+        <Button asChild className="flex items-center gap-2">
+          <Link to="/add">
+            <Plus size={16} />
+            Add Recommendation
+          </Link>
+        </Button>
       </div>
       
       <RecommendationFilters
