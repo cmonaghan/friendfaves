@@ -20,6 +20,7 @@ export const dbConfig = {
 
 // Get current auth state - whether a user is logged in or not
 export const getIsAuthenticated = () => {
+  // Check if there's a valid Supabase auth token
   return !!localStorage.getItem('supabase.auth.token');
 };
 
@@ -28,9 +29,6 @@ export const getCurrentStorageProvider = (): StorageProvider => {
   if (isDemo) return StorageProvider.LOCAL_STORAGE;
   return getIsAuthenticated() ? StorageProvider.DATABASE : StorageProvider.IN_MEMORY;
 };
-
-// The current storage provider based on demo mode and authentication
-export const currentStorageProvider = getCurrentStorageProvider();
 
 // Show test data for visitors only, not for authenticated users
 export const SHOW_TEST_DATA_FOR_VISITORS = true;

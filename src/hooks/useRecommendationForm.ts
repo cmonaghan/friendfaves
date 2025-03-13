@@ -31,7 +31,8 @@ export function useRecommendationForm(
     setIsSubmitting(true);
     
     try {
-      console.log("Submitting recommendation with storage provider:", getStorageProvider());
+      const storageProvider = getStorageProvider();
+      console.log("Submitting recommendation with storage provider:", storageProvider);
       let recommender: Person;
       
       if (isAddingNewFriend && data.newFriendName) {
@@ -103,8 +104,7 @@ export function useRecommendationForm(
         queryKey: queryKeys.recommendations
       });
       
-      const storageType = getStorageProvider();
-      if (storageType === StorageProvider.IN_MEMORY) {
+      if (storageProvider === StorageProvider.IN_MEMORY) {
         toast.success("Recommendation added to your session!");
       } else {
         toast.success("Recommendation added successfully!");

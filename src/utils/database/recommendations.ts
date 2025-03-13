@@ -10,9 +10,8 @@ import { SHOW_TEST_DATA_FOR_VISITORS, ALLOW_VISITOR_RECOMMENDATIONS } from '../s
 import { mockRecommendations } from '../mockData';
 import { getCurrentSession, isAuthenticated } from './session';
 import { getPeople } from './people';
-import { useToast } from '@/hooks/use-toast';
 
-// Initialize hidden recommendations array
+// Initialize hidden recommendations array for the browser session
 if (typeof window !== 'undefined' && !window.hiddenMockRecommendations) {
   window.hiddenMockRecommendations = [];
 }
@@ -81,18 +80,24 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
     });
     
     return recommendations;
-  } else if (SHOW_TEST_DATA_FOR_VISITORS) {
-    console.log('Fetching mock recommendations for unauthenticated visitor');
+  } else {
+    console.log('Fetching recommendations for unauthenticated visitor');
+    
+    // Before returning, log the total count of visitor recommendations for debugging
+    console.log(`Current visitor recommendations count: ${visitorRecommendationsStore.length}`);
     
     // Filter out hidden mock recommendations
-    const filteredMockRecommendations = mockRecommendations.filter(rec => 
-      !window.hiddenMockRecommendations?.includes(rec.id)
-    );
+    const filteredMockRecommendations = SHOW_TEST_DATA_FOR_VISITORS 
+      ? mockRecommendations.filter(rec => 
+          !window.hiddenMockRecommendations?.includes(rec.id)
+        )
+      : [];
     
-    // Return filtered mock data plus visitor recommendations
-    return [...filteredMockRecommendations, ...visitorRecommendationsStore];
-  } else {
-    return [...visitorRecommendationsStore];
+    // Copy visitor recommendations to avoid reference issues
+    const visitorRecs = [...visitorRecommendationsStore];
+    
+    // Return combined recommendations
+    return [...filteredMockRecommendations, ...visitorRecs];
   }
 };
 
@@ -179,6 +184,15 @@ export const getRecommendationsByType = async (type: RecommendationType): Promis
 export const addRecommendation = async (recommendation: Recommendation): Promise<void> => {
   await initializeDatabaseStorage();
   
+  // Clean the recommendation object by ensuring proper structure
+  const cleanedRecommendation = {
+    ...recommendation,
+    // Make sure required fields have proper values
+    reason: recommendation.reason || undefined,
+    source: recommendation.source || undefined,
+    customCategory: recommendation.customCategory || undefined
+  };
+  
   // Get the current session
   const userAuthenticated = await isAuthenticated();
   const session = await getCurrentSession();
@@ -190,15 +204,15 @@ export const addRecommendation = async (recommendation: Recommendation): Promise
     const { error } = await supabase
       .from('recommendations')
       .insert([{
-        id: recommendation.id,
-        title: recommendation.title,
-        type: recommendation.type,
-        recommender_id: recommendation.recommender.id,
-        reason: recommendation.reason,
-        source: recommendation.source,
-        date: recommendation.date,
-        is_completed: recommendation.isCompleted,
-        custom_category: recommendation.customCategory,
+        id: cleanedRecommendation.id,
+        title: cleanedRecommendation.title,
+        type: cleanedRecommendation.type,
+        recommender_id: cleanedRecommendation.recommender.id,
+        reason: cleanedRecommendation.reason,
+        source: cleanedRecommendation.source,
+        date: cleanedRecommendation.date,
+        is_completed: cleanedRecommendation.isCompleted,
+        custom_category: cleanedRecommendation.customCategory,
         user_id: session.user.id
       }]);
     
@@ -207,11 +221,13 @@ export const addRecommendation = async (recommendation: Recommendation): Promise
       throw new Error('Failed to add recommendation to database');
     }
     
-    console.log('Added recommendation to database:', recommendation.id);
+    console.log('Added recommendation to database:', cleanedRecommendation.id);
   } else if (ALLOW_VISITOR_RECOMMENDATIONS) {
     console.log('Adding in-memory recommendation for unauthenticated visitor');
     // Store in the visitor-specific in-memory store
-    visitorRecommendationsStore.push(recommendation);
+    visitorRecommendationsStore.push(cleanedRecommendation);
+    console.log('Added recommendation:', cleanedRecommendation);
+    console.log('Current visitor recommendations:', visitorRecommendationsStore.length);
   } else {
     throw new Error('Unauthorized: Cannot add recommendations without logging in');
   }

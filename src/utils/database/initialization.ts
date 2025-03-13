@@ -17,8 +17,10 @@ export let visitorCustomCategoriesStore: any[] = [];
  * Initializes the database storage
  */
 export const initializeDatabaseStorage = async (): Promise<void> => {
-  // Reset initialization flag when called to ensure proper re-initialization on auth state changes
-  initialized = false;
+  if (initialized) {
+    // Skip if already initialized to avoid resetting visitor data between calls
+    return;
+  }
   
   console.log('Initializing database storage with config:', {
     host: dbConfig.host,
@@ -43,10 +45,9 @@ export const initializeDatabaseStorage = async (): Promise<void> => {
       // Use mock data for unauthenticated users only if configured to show test data
       recommendationsStore = SHOW_TEST_DATA_FOR_VISITORS ? [...mockRecommendations] : [];
       peopleStore = SHOW_TEST_DATA_FOR_VISITORS ? [...mockPeople] : [];
-      // Initialize empty visitor recommendations store
-      visitorRecommendationsStore = [];
-      // Initialize empty visitor custom categories store
-      visitorCustomCategoriesStore = [];
+      
+      // Don't reset visitor stores if already initialized - this preserves in-memory data
+      // between function calls for the duration of the session
     }
     
     initialized = true;
