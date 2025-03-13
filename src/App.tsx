@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/components/theme-provider";
 import Layout from './components/Layout';
 import Index from './pages/Index';
@@ -12,6 +12,7 @@ import NotFound from './pages/NotFound';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthProvider';
+import { useAuth } from './contexts/AuthProvider';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -23,6 +24,19 @@ const queryClient = new QueryClient({
   },
 });
 
+// Route component that redirects authenticated users from home to recommendations
+const HomeRoute = () => {
+  const { user } = useAuth();
+  
+  // Redirect authenticated users to recommendations page
+  if (user) {
+    return <Navigate to="/recommendations" replace />;
+  }
+  
+  // Show the index page for unauthenticated users
+  return <Index />;
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -31,7 +45,7 @@ function App() {
           <AuthProvider>
             <Layout>
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<HomeRoute />} />
                 <Route path="/recommendations" element={<RecommendationList />} />
                 <Route path="/recommendation/:id" element={<ViewRecommendation />} />
                 <Route path="/recommendation/:id/edit" element={<RecommendationDetail />} />

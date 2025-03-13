@@ -18,12 +18,12 @@ const HeroSection = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild size="lg" className="rounded-full px-8">
             <Link to="/auth">
-              Sign Up
+              Get Started
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="rounded-full px-8">
             <Link to="/recommendations">
-              {user ? "Browse All" : "Try the demo"}
+              Try the Demo
             </Link>
           </Button>
         </div>

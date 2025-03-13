@@ -49,7 +49,12 @@ const NavBar = () => {
     }
   };
 
-  const navLinks = [
+  // Define navigation links based on authentication status
+  const navLinks = user ? [
+    // For authenticated users, only show Recommendations
+    { path: "/recommendations", label: "Recommendations", icon: Book }
+  ] : [
+    // For unauthenticated users, show both Home and Recommendations
     { path: "/", label: "Home", icon: Home },
     { path: "/recommendations", label: "Recommendations", icon: Book }
   ];
@@ -63,7 +68,7 @@ const NavBar = () => {
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8">
         <div className="h-16 flex items-center justify-between">
           <div className="flex items-center">
-            <Link to="/" className="text-xl font-semibold flex items-center gap-2">
+            <Link to={user ? "/recommendations" : "/"} className="text-xl font-semibold flex items-center gap-2">
               <span className="bg-primary text-primary-foreground p-1 rounded">
                 <Book size={16} />
               </span>
