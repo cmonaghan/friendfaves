@@ -35,7 +35,8 @@ export const getCustomCategories = async (): Promise<CustomCategory[]> => {
     // Map the data to include default icon if not present in the database
     return (data || []).map(category => ({
       ...category,
-      icon: category.icon || 'HelpCircle' // Provide default icon if missing
+      // Add the icon property, it might not exist in the database schema
+      icon: 'icon' in category ? category.icon : 'HelpCircle'
     }));
   } else {
     console.log('Fetching in-memory custom categories for unauthenticated visitor', visitorCustomCategoriesStore);
@@ -97,7 +98,8 @@ export const addCustomCategory = async (category: CustomCategory): Promise<Custo
       // Return the category with the default icon if not in database
       return {
         ...data,
-        icon: data.icon || category.icon || 'HelpCircle'
+        // Add the icon property using optional chaining and nullish coalescing
+        icon: ('icon' in data ? data.icon : null) || category.icon || 'HelpCircle'
       };
     } catch (error) {
       console.error('Error in addCustomCategory:', error);

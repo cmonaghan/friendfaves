@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthProvider";
@@ -139,6 +138,3 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
     </Dialog>
   );
 }
-
-// Import at the end to avoid circular dependencies
-import { colorOptions } from './types';
