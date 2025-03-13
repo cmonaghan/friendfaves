@@ -1,8 +1,7 @@
 
 import { LucideIcon } from "lucide-react";
 import { 
-  Book, Film, Tv, Utensils, Store, Headphones, HelpCircle,
-  PlaneTakeoff, MapPin, Music, Building, Gift, Newspaper, Binoculars 
+  Store, Headphones, PlaneTakeoff, MapPin, Music, Building, Gift, Newspaper, Binoculars, Rocket 
 } from 'lucide-react';
 import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
@@ -16,13 +15,10 @@ export const iconOptions = [
   { value: "Gift", label: "Gift", icon: Gift },
   { value: "Newspaper", label: "News", icon: Newspaper },
   { value: "Binoculars", label: "Discover", icon: Binoculars },
-  { value: "Book", label: "Book", icon: Book },
-  { value: "Film", label: "Film", icon: Film },
-  { value: "Tv", label: "TV", icon: Tv },
   { value: "Utensils", label: "Food", icon: Utensils },
   { value: "Store", label: "Store", icon: Store },
   { value: "Headphones", label: "Audio", icon: Headphones },
-  { value: "HelpCircle", label: "Other", icon: HelpCircle }
+  { value: "Rocket", label: "Other", icon: Rocket }
 ];
 
 // Helper function to get icon component by name
