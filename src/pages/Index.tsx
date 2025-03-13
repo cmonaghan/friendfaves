@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { RecommendationType, CustomCategory } from '@/utils/types';
@@ -10,6 +11,7 @@ import { useRecommendations, useCustomCategories } from '@/hooks/useRecommendati
 import CategorySection from '@/components/home/CategorySection';
 import RecommendationsSection from '@/components/home/RecommendationsSection';
 import HeroSection from '@/components/home/HeroSection';
+import VisitorRecommendationsManager from '@/components/home/VisitorRecommendationsManager';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<RecommendationType | string>(RecommendationType.BOOK);
@@ -166,8 +168,10 @@ const Index = () => {
   return (
     <div className="max-w-screen-xl mx-auto">
       {!user && <HeroSection />}
+      
+      {!user && <VisitorRecommendationsManager />}
 
-      <div className="mb-4">
+      <div className="mb-4 mt-12">
         <div className="inline-block">
           <Button asChild className="flex items-center gap-2">
             <Link to="/add">

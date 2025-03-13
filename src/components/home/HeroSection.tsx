@@ -7,7 +7,7 @@ const HeroSection = () => {
   const { user } = useAuth();
   
   return (
-    <section className="mb-12 py-12 sm:py-16 px-4">
+    <section className="mb-8 py-12 sm:py-16 px-4">
       <div className="max-w-3xl mx-auto text-center">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight">
           Track <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">recommendations</span> from friends
@@ -27,8 +27,8 @@ const HeroSection = () => {
             </Link>
           </Button>
         </div>
-        <p className="mt-6 text-base text-muted-foreground max-w-2xl mx-auto">
-          Try out the demo using sample data below. Any recommendations you create will be reset when you refresh the page.
+        <p className="mt-6 text-sm text-muted-foreground max-w-2xl mx-auto">
+          Try out the demo using sample data, or save your own recommendations below. No account required!
         </p>
       </div>
     </section>
