@@ -50,13 +50,12 @@ export const addCustomCategory = async (category: CustomCategory): Promise<Custo
     // Add to database for authenticated users
     const { data, error } = await supabase
       .from('custom_categories')
-      .insert([{
+      .insert({
         type: category.type,
         label: category.label,
         color: category.color || 'bg-gray-50',
-        // Ensure icon is stored if present, otherwise use default
-        icon: category.icon || 'HelpCircle'
-      }])
+        user_id: (await supabase.auth.getUser()).data.user?.id
+      })
       .select()
       .single();
     

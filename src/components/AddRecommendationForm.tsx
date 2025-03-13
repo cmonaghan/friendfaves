@@ -53,7 +53,6 @@ const AddRecommendationForm = () => {
       recommenderId: "",
       newFriendName: "",
       reason: "",
-      source: "",
       customCategory: "",
     },
     mode: "onBlur", // Only validate on blur, not on change

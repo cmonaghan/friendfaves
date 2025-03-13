@@ -9,7 +9,6 @@ export const formSchema = z.object({
   recommenderId: z.string().min(1, { message: "Please select who recommended this" }),
   newFriendName: z.string().optional(),
   reason: z.string().optional(),
-  source: z.string().optional(),
   customCategory: z.string().optional(),
 });
 
