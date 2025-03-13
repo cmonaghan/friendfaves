@@ -28,7 +28,7 @@ const HeroSection = () => {
           </Button>
         </div>
         <p className="mt-6 text-sm text-muted-foreground max-w-2xl mx-auto">
-          Try out the demo using sample data, or save your own recommendations below. No account required!
+          Save your first recommendations below, or try out the demo using sample data.
         </p>
       </div>
     </section>
