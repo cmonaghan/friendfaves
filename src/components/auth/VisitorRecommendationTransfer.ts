@@ -24,7 +24,7 @@ export const transferVisitorRecommendations = async (
       return;
     }
     
-    console.log(`Transferring ${visitorRecs.length} recommendations to user account`);
+    console.log(`Transferring ${visitorRecs.length} recommendations to user account ${userId}`);
     
     // Add each recommendation to the user's account
     const transferPromises = visitorRecs.map(async (rec) => {
@@ -35,6 +35,7 @@ export const transferVisitorRecommendations = async (
           id: crypto.randomUUID(), // Generate a new ID for the recommendation
         };
         
+        console.log("Transferring recommendation:", newRec);
         await addRecommendation(newRec);
         return true;
       } catch (error) {
@@ -43,14 +44,17 @@ export const transferVisitorRecommendations = async (
       }
     });
     
-    await Promise.all(transferPromises);
+    const results = await Promise.all(transferPromises);
+    const successCount = results.filter(Boolean).length;
     
     // Invalidate recommendations query to refresh the data
-    queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
     
-    toast.success(`Transferred ${visitorRecs.length} recommendations to your account!`);
+    console.log(`Successfully transferred ${successCount} of ${visitorRecs.length} recommendations`);
+    toast.success(`Transferred ${successCount} recommendations to your account!`);
   } catch (error) {
     console.error("Error transferring visitor recommendations:", error);
     toast.error("Failed to transfer your recommendations");
+    throw error; // Re-throw to allow the calling code to handle it
   }
 };

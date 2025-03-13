@@ -69,17 +69,28 @@ const RegisterForm = ({
       
       // If we have a session, it means the user was automatically signed in
       if (data.session) {
-        // Transfer visitor recommendations to the new user account
-        await transferVisitorRecommendations(data.session.user.id, queryClient);
+        console.log("User automatically signed in, transferring visitor recommendations...");
         
-        // Reset database initialization and refresh data
-        resetDatabaseInitialization();
-        queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
-        queryClient.invalidateQueries({ queryKey: queryKeys.people });
-        queryClient.invalidateQueries({ queryKey: queryKeys.customCategories });
-        
-        navigate("/");
-        toast.success("Account created successfully!");
+        try {
+          // Transfer visitor recommendations to the new user account
+          await transferVisitorRecommendations(data.session.user.id, queryClient);
+          
+          // Reset database initialization and refresh data
+          resetDatabaseInitialization();
+          await queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
+          await queryClient.invalidateQueries({ queryKey: queryKeys.people });
+          await queryClient.invalidateQueries({ queryKey: queryKeys.customCategories });
+          
+          // Add a delay to allow the database to update
+          setTimeout(() => {
+            navigate("/recommendations");
+            toast.success("Account created successfully! Your recommendations have been transferred.");
+          }, 1000);
+        } catch (transferError) {
+          console.error("Error transferring recommendations:", transferError);
+          toast.error("Account created, but there was an issue transferring your recommendations.");
+          navigate("/");
+        }
       } else {
         // Handle case where confirmation email was sent
         toast.success("Account created! Check your email for confirmation.");
