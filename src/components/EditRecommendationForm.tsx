@@ -64,7 +64,6 @@ const EditRecommendationForm = ({ recommendation }: EditRecommendationFormProps)
       recommenderId: recommendation.recommender.id,
       newFriendName: "",
       reason: recommendation.reason || "",
-      source: recommendation.source || "",
       customCategory: getCustomCategoryValue(),
     },
   });
@@ -103,7 +102,7 @@ const EditRecommendationForm = ({ recommendation }: EditRecommendationFormProps)
         type: recommendationType,
         recommender: recommender,
         reason: data.reason || undefined,
-        source: data.source || undefined,
+        source: recommendation.source, // Keep the existing source value
         customCategory: customCategoryValue
       };
       

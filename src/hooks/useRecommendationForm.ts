@@ -83,7 +83,7 @@ export function useRecommendationForm(
                : RecommendationType.OTHER),
         recommender: recommender,
         reason: data.reason || undefined,
-        source: data.source || undefined,
+        source: undefined, // Set source as undefined since it's been removed from the form
         date: new Date().toISOString().split('T')[0],
         isCompleted: false,
         customCategory: categoryForSaving
