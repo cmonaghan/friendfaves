@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
@@ -6,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/useRecommendationQueries";
+import { resetDatabaseInitialization } from "@/utils/database/initialization";
 
 type AuthContextType = {
   session: Session | null;
@@ -31,7 +31,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Get initial session
     const getInitialSession = async () => {
       try {
         const { data } = await supabase.auth.getSession();
@@ -46,14 +45,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     getInitialSession();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
         console.log("Auth state change:", event, newSession);
         
-        // Clear all queries when auth state changes
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-          // Invalidate all queries to force refetch with correct auth state
           queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
           queryClient.invalidateQueries({ queryKey: queryKeys.people });
           queryClient.invalidateQueries({ queryKey: queryKeys.customCategories });
@@ -72,34 +68,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // First check if session exists before trying to sign out
       if (!session) {
-        // If no session exists, just update local state and redirect
         setSession(null);
         setUser(null);
         navigate("/");
         return;
       }
       
-      // Attempt to sign out
       const { error } = await supabase.auth.signOut();
       
-      // Always clear session state regardless of error
       setSession(null);
       setUser(null);
       
-      // Log and handle error if it occurred
+      resetDatabaseInitialization();
+      
+      queryClient.clear();
+      
       if (error) {
         console.error("Supabase signOut error:", error);
-        // Don't throw the error - just log it and continue
       }
       
-      // Redirect to home page after sign out
       navigate("/");
     } catch (error) {
       console.error("Error in signOut function:", error);
-      // Don't throw the error - just log it to prevent the promise rejection
-      // that would trigger the error toast in NavBar
     }
   };
 
