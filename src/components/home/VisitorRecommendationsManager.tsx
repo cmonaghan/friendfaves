@@ -88,11 +88,11 @@ const VisitorRecommendationsManager = () => {
             ))}
           </div>
           {visitorRecommendationsCount > 0 && (
-            <div className="flex justify-center mt-8">
-              <p className="text-base text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <div className="flex flex-col items-center justify-center mt-8 space-y-4">
+              <p className="text-base text-muted-foreground">
                 Create an account to save these recommendations
               </p>
-              <Button asChild className="px-6">
+              <Button asChild className="px-8">
                 <Link to="/auth">Create account</Link>
               </Button>
             </div>

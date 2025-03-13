@@ -27,7 +27,7 @@ const HeroSection = () => {
             </Link>
           </Button>
         </div>
-        <p className="text-base text-muted-foreground mb-8 max-w-2xl mx-auto">
+        <p className="text-base text-muted-foreground mt-8 max-w-2xl mx-auto">
           Save your first recommendation below, or try out the demo to see how the app works first.
         </p>
       </div>
