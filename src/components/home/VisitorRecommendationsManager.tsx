@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { getRecommendations } from '@/utils/storage';
-import LandingRecommendationForm from './LandingRecommendationForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 
@@ -32,10 +31,6 @@ const VisitorRecommendationsManager = () => {
   useEffect(() => {
     loadVisitorRecommendations();
   }, []);
-
-  const handleFormSubmit = () => {
-    loadVisitorRecommendations();
-  };
 
   if (isLoading) {
     return <div className="flex justify-center py-8">Loading...</div>;
@@ -67,18 +62,14 @@ const VisitorRecommendationsManager = () => {
   }
 
   return (
-    <div className="mt-8">
-      <LandingRecommendationForm onFormSubmit={handleFormSubmit} />
-      
+    <div className="mt-4 text-center">
+      <p className="text-muted-foreground mb-3">
+        You've saved {visitorRecommendationsCount} of {MAX_VISITOR_RECOMMENDATIONS} recommendations.
+      </p>
       {visitorRecommendationsCount > 0 && (
-        <div className="max-w-lg mx-auto mt-4 text-center">
-          <p className="text-muted-foreground mb-3">
-            You've saved {visitorRecommendationsCount} of {MAX_VISITOR_RECOMMENDATIONS} recommendations.
-          </p>
-          <Button asChild variant="outline">
-            <Link to="/recommendations">View My Recommendations</Link>
-          </Button>
-        </div>
+        <Button asChild variant="outline">
+          <Link to="/recommendations">View My Recommendations</Link>
+        </Button>
       )}
     </div>
   );
