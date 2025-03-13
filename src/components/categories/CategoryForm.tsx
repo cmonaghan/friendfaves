@@ -81,6 +81,19 @@ export function CategoryForm({
         
         <CategoryIconSelector form={form} />
         
+        {/* Preview of the category appearance */}
+        <div className="mt-4">
+          <FormLabel>Category Appearance</FormLabel>
+          <div className="flex items-center mt-2">
+            <div className={`w-8 h-8 rounded-full ${previewColor} mr-2 flex items-center justify-center`}>
+              <SelectedIconComponent size={16} />
+            </div>
+            <span className="text-sm">
+              Your category will use an automatically selected color
+            </span>
+          </div>
+        </div>
+        
         <div className="flex justify-end space-x-2">
           <Button
             type="button"

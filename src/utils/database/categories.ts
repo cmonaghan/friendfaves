@@ -32,7 +32,11 @@ export const getCustomCategories = async (): Promise<CustomCategory[]> => {
       return [];
     }
     
-    return data || [];
+    // Map the data to include default icon if not present in the database
+    return (data || []).map(category => ({
+      ...category,
+      icon: category.icon || 'HelpCircle' // Provide default icon if missing
+    }));
   } else {
     console.log('Fetching in-memory custom categories for unauthenticated visitor', visitorCustomCategoriesStore);
     // Return visitor-created custom categories for the current session
@@ -53,25 +57,52 @@ export const addCustomCategory = async (category: CustomCategory): Promise<Custo
   if (userAuthenticated && userId) {
     console.log('Adding user-specific custom category to database');
     
-    // Insert the custom category into Supabase
-    const { data, error } = await supabase
-      .from('custom_categories')
-      .insert([{
+    try {
+      // Check if the table has the 'icon' column
+      const { data: columnInfo, error: columnError } = await supabase
+        .from('custom_categories')
+        .select('*')
+        .limit(1);
+        
+      // Only include the icon field if it exists in the database schema
+      const hasIconColumn = columnInfo && columnInfo.length > 0 && 'icon' in columnInfo[0];
+      
+      // Create base category data
+      const categoryData: any = {
         type: category.type,
         label: category.label,
         color: category.color || 'bg-gray-50',
-        icon: category.icon || 'HelpCircle',
         user_id: userId
-      }])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error adding custom category:', error);
+      };
+      
+      // Only add icon if the column exists
+      if (hasIconColumn) {
+        categoryData.icon = category.icon || 'HelpCircle';
+      }
+      
+      console.log('Saving category with data:', categoryData);
+      
+      // Insert the custom category into Supabase
+      const { data, error } = await supabase
+        .from('custom_categories')
+        .insert([categoryData])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error adding custom category:', error);
+        return null;
+      }
+      
+      // Return the category with the default icon if not in database
+      return {
+        ...data,
+        icon: data.icon || category.icon || 'HelpCircle'
+      };
+    } catch (error) {
+      console.error('Error in addCustomCategory:', error);
       return null;
     }
-    
-    return data || null;
   } else if (ALLOW_VISITOR_RECOMMENDATIONS) {
     console.log('Adding in-memory custom category for unauthenticated visitor');
     

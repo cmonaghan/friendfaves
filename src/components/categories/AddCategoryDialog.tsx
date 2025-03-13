@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { addCustomCategory } from "@/utils/storage";
 import { queryKeys, useCustomCategories } from "@/hooks/useRecommendationQueries";
 import { CategoryForm } from "./CategoryForm";
-import { CategoryFormValues } from "./types";
+import { CategoryFormValues, colorOptions } from "./types";
 
 interface AddCategoryDialogProps {
   open: boolean;
@@ -33,6 +33,7 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
     setIsSubmitting(true);
     
     try {
+      // Generate type from label (lowercase with hyphens)
       const type = values.label.toLowerCase().replace(/\s+/g, '-');
       
       // Get the first unused color from our pool
@@ -45,9 +46,12 @@ export function AddCategoryDialog({ open, onOpenChange, onCategoryCreated }: Add
         icon: values.icon || "HelpCircle"
       };
       
+      console.log("Attempting to add category:", newCategory);
       const result = await addCustomCategory(newCategory);
       
       if (result) {
+        console.log("Category added successfully:", result);
+        
         if (user) {
           toast.success("Category added successfully to your account");
         } else {
