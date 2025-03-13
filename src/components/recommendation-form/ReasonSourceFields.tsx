@@ -16,7 +16,7 @@ export function ReasonSourceFields({ form }: ReasonSourceFieldsProps) {
         name="reason"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Why they recommended it (optional)</FormLabel>
+            <FormLabel>Why they recommend it (optional)</FormLabel>
             <FormControl>
               <Textarea
                 placeholder="Enter their reason for recommending it"
