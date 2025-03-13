@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/useRecommendationQueries";
 import { resetDatabaseInitialization } from "@/utils/database/initialization";
 import { transferVisitorRecommendations } from "./VisitorRecommendationTransfer";
+import { AlertCircle } from "lucide-react";
 
 interface RegisterFormProps {
   defaultEmail?: string;
@@ -26,14 +27,18 @@ const RegisterForm = ({
   const [password, setPassword] = useState(defaultPassword);
   const [name, setName] = useState(defaultName);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Reset error state
+    setErrorMessage(null);
+    
     if (!email || !password || !name) {
-      toast.error("Please fill in all fields");
+      setErrorMessage("Please fill in all fields");
       return;
     }
     
@@ -50,7 +55,17 @@ const RegisterForm = ({
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle rate limiting errors specifically
+        if (error.status === 429) {
+          setErrorMessage(`Rate limit exceeded: ${error.message}`);
+          console.log("Rate limit error:", error);
+        } else {
+          setErrorMessage(error.message || "Error creating account");
+          console.error("Error signing up:", error);
+        }
+        return;
+      }
       
       // If we have a session, it means the user was automatically signed in
       if (data.session) {
@@ -64,12 +79,14 @@ const RegisterForm = ({
         queryClient.invalidateQueries({ queryKey: queryKeys.customCategories });
         
         navigate("/");
+        toast.success("Account created successfully!");
+      } else {
+        // Handle case where confirmation email was sent
+        toast.success("Account created! Check your email for confirmation.");
       }
-      
-      toast.success("Account created! Check your email for confirmation.");
     } catch (error: any) {
-      toast.error(error.message || "Error creating account");
-      console.error("Error signing up:", error);
+      setErrorMessage(error.message || "Error creating account");
+      console.error("Error in registration process:", error);
     } finally {
       setLoading(false);
     }
@@ -77,6 +94,13 @@ const RegisterForm = ({
 
   return (
     <form onSubmit={handleSignUp} className="space-y-4">
+      {errorMessage && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-3 text-red-800 text-sm flex items-start gap-2">
+          <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <div>{errorMessage}</div>
+        </div>
+      )}
+      
       <div className="space-y-2">
         <Label htmlFor="name-register">Name</Label>
         <Input
