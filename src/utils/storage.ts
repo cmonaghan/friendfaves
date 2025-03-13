@@ -29,10 +29,15 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
   const provider = getProvider();
   console.log(`Using ${provider} provider for getRecommendations`);
   
-  if (provider === StorageProvider.LOCAL_STORAGE) {
-    return localStorage.getRecommendations();
-  } else {
-    return await databaseStorage.getRecommendations();
+  try {
+    if (provider === StorageProvider.LOCAL_STORAGE) {
+      return localStorage.getRecommendations();
+    } else {
+      return await databaseStorage.getRecommendations();
+    }
+  } catch (error) {
+    console.error("Error getting recommendations:", error);
+    return [];
   }
 };
 
@@ -65,14 +70,26 @@ export const addRecommendation = async (recommendation: Recommendation): Promise
   const provider = getProvider();
   console.log(`Using ${provider} provider for addRecommendation`);
   
-  if (provider === StorageProvider.LOCAL_STORAGE) {
-    localStorage.addRecommendation(recommendation);
-  } else {
-    await databaseStorage.addRecommendation(recommendation);
+  try {
+    if (provider === StorageProvider.LOCAL_STORAGE) {
+      localStorage.addRecommendation(recommendation);
+    } else {
+      await databaseStorage.addRecommendation(recommendation);
+    }
+    
+    // Log recommendation details for debugging
+    console.log(`Successfully added recommendation ${recommendation.id}:`, {
+      title: recommendation.title,
+      type: recommendation.type,
+      provider: provider
+    });
+    
+    // Notify listeners that recommendations have been updated
+    notifyRecommendationsUpdated();
+  } catch (error) {
+    console.error(`Error adding recommendation ${recommendation.id}:`, error);
+    throw error;
   }
-  
-  // Notify listeners that recommendations have been updated
-  notifyRecommendationsUpdated();
 };
 
 // Get all people from storage

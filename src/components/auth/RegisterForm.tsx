@@ -44,6 +44,8 @@ const RegisterForm = ({
     
     try {
       setLoading(true);
+      console.log("Starting registration process...");
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -69,27 +71,33 @@ const RegisterForm = ({
       
       // If we have a session, it means the user was automatically signed in
       if (data.session) {
-        console.log("User automatically signed in, transferring visitor recommendations...");
+        console.log("User automatically signed in with id:", data.session.user.id);
+        console.log("Starting visitor recommendation transfer process...");
         
         try {
           // Transfer visitor recommendations to the new user account
           await transferVisitorRecommendations(data.session.user.id, queryClient);
           
           // Reset database initialization and refresh data
+          console.log("Resetting database initialization...");
           resetDatabaseInitialization();
+          
+          console.log("Invalidating queries...");
           await queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
           await queryClient.invalidateQueries({ queryKey: queryKeys.people });
           await queryClient.invalidateQueries({ queryKey: queryKeys.customCategories });
           
-          // Add a delay to allow the database to update
+          console.log("Registration and transfer process complete, redirecting to recommendations page...");
+          
+          // Add a longer delay to allow the database to update and queries to complete
           setTimeout(() => {
             navigate("/recommendations");
             toast.success("Account created successfully! Your recommendations have been transferred.");
-          }, 1000);
+          }, 2000);
         } catch (transferError) {
           console.error("Error transferring recommendations:", transferError);
           toast.error("Account created, but there was an issue transferring your recommendations.");
-          navigate("/");
+          setTimeout(() => navigate("/"), 1000);
         }
       } else {
         // Handle case where confirmation email was sent
