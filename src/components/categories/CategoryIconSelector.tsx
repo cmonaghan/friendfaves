@@ -48,7 +48,7 @@ export function CategoryIconSelector({ form }: CategoryIconSelectorProps) {
                 onClick={() => form.setValue("icon", iconOption.value)}
               >
                 <iconOption.icon size={24} />
-                <span className="text-xs mt-1">{iconOption.label}</span>
+                {/* <span className="text-xs mt-1">{iconOption.label}</span> */}
               </div>
             ))}
           </div>
