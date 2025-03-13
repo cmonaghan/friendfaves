@@ -15,7 +15,6 @@ export const iconOptions = [
   { value: "Gift", label: "Gift", icon: Gift },
   { value: "Newspaper", label: "News", icon: Newspaper },
   { value: "Binoculars", label: "Discover", icon: Binoculars },
-  { value: "Utensils", label: "Food", icon: Utensils },
   { value: "Store", label: "Store", icon: Store },
   { value: "Headphones", label: "Audio", icon: Headphones },
   { value: "Rocket", label: "Other", icon: Rocket }
