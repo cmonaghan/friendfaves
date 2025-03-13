@@ -18,7 +18,11 @@ import { ReasonSourceFields } from "./recommendation-form/ReasonSourceFields";
 import { FormActions } from "./recommendation-form/FormActions";
 import { formSchema, RecommendationFormValues } from "./recommendation-form/types";
 
-const AddRecommendationForm = () => {
+interface AddRecommendationFormProps {
+  skipNavigation?: boolean;
+}
+
+const AddRecommendationForm = ({ skipNavigation }: AddRecommendationFormProps) => {
   const [isAddingNewFriend, setIsAddingNewFriend] = useState(false);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
@@ -27,7 +31,8 @@ const AddRecommendationForm = () => {
   const { isSubmitting, submitRecommendation } = useRecommendationForm(
     people, 
     setPeople, 
-    !!user
+    !!user,
+    skipNavigation
   );
 
   useEffect(() => {
@@ -60,6 +65,20 @@ const AddRecommendationForm = () => {
 
   const onSubmit = async (data: RecommendationFormValues) => {
     await submitRecommendation(data, isAddingNewFriend, isCustomCategory);
+    
+    // If we're not navigating away (i.e., on the landing page), reset the form
+    if (skipNavigation) {
+      form.reset({
+        title: "",
+        type: RecommendationType.BOOK,
+        recommenderId: "",
+        newFriendName: "",
+        reason: "",
+        customCategory: "",
+      });
+      setIsAddingNewFriend(false);
+      setIsCustomCategory(false);
+    }
   };
 
   const handleRecommenderChange = (value: string) => {

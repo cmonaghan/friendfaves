@@ -13,7 +13,8 @@ import { getCurrentStorageProvider, StorageProvider } from "@/utils/storageConfi
 export function useRecommendationForm(
   people: Person[],
   setPeople: React.Dispatch<React.SetStateAction<Person[]>>,
-  isUser?: boolean
+  isUser?: boolean,
+  skipNavigation?: boolean
 ) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -110,7 +111,10 @@ export function useRecommendationForm(
         toast.success("Recommendation added successfully!");
       }
       
-      navigate("/recommendations");
+      // Only navigate away if skipNavigation is not true
+      if (!skipNavigation) {
+        navigate("/recommendations");
+      }
     } catch (error) {
       toast.error("Failed to add recommendation. Please try again.");
       console.error("Error submitting form:", error);

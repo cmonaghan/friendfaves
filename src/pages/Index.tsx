@@ -43,7 +43,7 @@ const Index = () => {
       {/* Display form for unauthenticated users */}
       {!user && (
         <div className="mt-8 mb-12">
-          <AddRecommendationForm />
+          <AddRecommendationForm skipNavigation={true} />
         </div>
       )}
 

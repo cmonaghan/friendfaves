@@ -20,7 +20,9 @@ const VisitorRecommendationsManager = () => {
       const recommendations = await getRecommendations();
       // Filter out mock recommendations to only get visitor-added ones
       const visitorRecs = recommendations.filter(rec => 
-        !rec.id.startsWith('mock-') && !rec.id.startsWith('demo-')
+        !rec.id.startsWith('mock-') && !rec.id.startsWith('demo-') && 
+        // Exclude mock data which typically has numerical IDs
+        isNaN(Number(rec.id))
       );
       setVisitorRecommendations(visitorRecs);
     } catch (error) {
@@ -32,6 +34,22 @@ const VisitorRecommendationsManager = () => {
 
   useEffect(() => {
     loadVisitorRecommendations();
+  }, []);
+
+  // Set up a listener to refresh recommendations when the recommendations
+  // query cache is invalidated (when a new recommendation is added)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      loadVisitorRecommendations();
+    };
+
+    // Listen for custom event that will be dispatched when recommendations change
+    window.addEventListener('recommendations-updated', handleStorageChange);
+    
+    // Clean up the event listener on component unmount
+    return () => {
+      window.removeEventListener('recommendations-updated', handleStorageChange);
+    };
   }, []);
 
   if (isLoading) {
@@ -66,7 +84,7 @@ const VisitorRecommendationsManager = () => {
   }
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 mb-12">
       {visitorRecommendationsCount > 0 ? (
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-center">Your Saved Recommendations</h2>

@@ -18,6 +18,12 @@ export const initializeStorage = async (): Promise<void> => {
 // Helper to get the current storage provider dynamically
 const getProvider = () => getCurrentStorageProvider();
 
+// Helper to notify listeners that recommendations have been updated
+const notifyRecommendationsUpdated = () => {
+  // Dispatch a custom event that components can listen for
+  window.dispatchEvent(new CustomEvent('recommendations-updated'));
+};
+
 // Get all recommendations from storage
 export const getRecommendations = async (): Promise<Recommendation[]> => {
   const provider = getProvider();
@@ -64,6 +70,9 @@ export const addRecommendation = async (recommendation: Recommendation): Promise
   } else {
     await databaseStorage.addRecommendation(recommendation);
   }
+  
+  // Notify listeners that recommendations have been updated
+  notifyRecommendationsUpdated();
 };
 
 // Get all people from storage
@@ -100,6 +109,9 @@ export const updateRecommendation = async (updatedRec: Recommendation): Promise<
   } else {
     await databaseStorage.updateRecommendation(updatedRec);
   }
+  
+  // Notify listeners that recommendations have been updated
+  notifyRecommendationsUpdated();
 };
 
 // Delete a recommendation
@@ -112,6 +124,9 @@ export const deleteRecommendation = async (id: string): Promise<void> => {
   } else {
     await databaseStorage.deleteRecommendation(id);
   }
+  
+  // Notify listeners that recommendations have been updated
+  notifyRecommendationsUpdated();
 };
 
 // Get all custom categories
