@@ -216,7 +216,7 @@ const ViewRecommendation = () => {
         <div className="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-3">
             <div>
-              <h2 className="text-lg font-semibold mb-3">Why They Recommended It</h2>
+              <h2 className="text-lg font-semibold mb-3">Why They Recommend It</h2>
               <div className="bg-secondary/50 p-4 rounded-lg">
                 <p className="italic text-muted-foreground">"{recommendation.reason || 'No reason provided'}"</p>
               </div>
