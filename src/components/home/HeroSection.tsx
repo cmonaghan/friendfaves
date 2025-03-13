@@ -13,7 +13,7 @@ const HeroSection = () => {
           Track <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">recommendations</span> from friends
         </h1>
         <p className="text-base text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Keep track of all the amazing books, movies, TV shows, and recipes your friends recommend to you in one beautiful place.
+          Keep track of all the amazing books, movies, TV shows, podcasts, and restaurants that your friends recommend to you in one beautiful place.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild size="lg" className="rounded-full px-8">
