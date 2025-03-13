@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { AlertCircle } from 'lucide-react';
 import RecommendationCard from '@/components/RecommendationCard';
 import { Recommendation } from '@/utils/types';
 
-const MAX_VISITOR_RECOMMENDATIONS = 3;
+const MAX_VISITOR_RECOMMENDATIONS = 15;
 
 const VisitorRecommendationsManager = () => {
   const [visitorRecommendations, setVisitorRecommendations] = useState<Recommendation[]>([]);
@@ -18,10 +17,8 @@ const VisitorRecommendationsManager = () => {
     setIsLoading(true);
     try {
       const recommendations = await getRecommendations();
-      // Filter out mock recommendations to only get visitor-added ones
       const visitorRecs = recommendations.filter(rec => 
         !rec.id.startsWith('mock-') && !rec.id.startsWith('demo-') && 
-        // Exclude mock data which typically has numerical IDs
         isNaN(Number(rec.id))
       );
       setVisitorRecommendations(visitorRecs);
@@ -36,17 +33,13 @@ const VisitorRecommendationsManager = () => {
     loadVisitorRecommendations();
   }, []);
 
-  // Set up a listener to refresh recommendations when the recommendations
-  // query cache is invalidated (when a new recommendation is added)
   useEffect(() => {
     const handleStorageChange = () => {
       loadVisitorRecommendations();
     };
 
-    // Listen for custom event that will be dispatched when recommendations change
     window.addEventListener('recommendations-updated', handleStorageChange);
     
-    // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener('recommendations-updated', handleStorageChange);
     };
