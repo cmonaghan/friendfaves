@@ -8,6 +8,7 @@ import { Person, RecommendationType, CustomCategory } from "@/utils/types";
 import { addRecommendation, addPerson, addCustomCategory } from "@/utils/storage";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "./useRecommendationQueries";
+import { getCurrentStorageProvider, StorageProvider } from "@/utils/storageConfig";
 
 export function useRecommendationForm(
   people: Person[],
@@ -17,6 +18,10 @@ export function useRecommendationForm(
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
+  // Get storage provider dynamically each time the form is submitted
+  // This ensures we use the correct provider even if auth state changed
+  const getStorageProvider = () => getCurrentStorageProvider();
 
   const submitRecommendation = async (
     data: RecommendationFormValues,
@@ -26,6 +31,7 @@ export function useRecommendationForm(
     setIsSubmitting(true);
     
     try {
+      console.log("Submitting recommendation with storage provider:", getStorageProvider());
       let recommender: Person;
       
       if (isAddingNewFriend && data.newFriendName) {
@@ -97,7 +103,13 @@ export function useRecommendationForm(
         queryKey: queryKeys.recommendations
       });
       
-      toast.success("Recommendation added successfully!");
+      const storageType = getStorageProvider();
+      if (storageType === StorageProvider.IN_MEMORY) {
+        toast.success("Recommendation added to your session!");
+      } else {
+        toast.success("Recommendation added successfully!");
+      }
+      
       navigate("/recommendations");
     } catch (error) {
       toast.error("Failed to add recommendation. Please try again.");

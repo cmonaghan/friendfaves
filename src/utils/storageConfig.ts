@@ -6,7 +6,7 @@ export const isDemo = false; // Set to false to use database storage
 export enum StorageProvider {
   LOCAL_STORAGE = 'localStorage',
   DATABASE = 'database',
-  IN_MEMORY = 'in-memory'  // New storage type for non-authenticated users
+  IN_MEMORY = 'in-memory'  // Storage type for non-authenticated users
 }
 
 // Database configuration
@@ -18,13 +18,19 @@ export const dbConfig = {
   database: import.meta.env.VITE_DB_NAME || 'recommendations'
 };
 
-// The current storage provider based on demo mode
-export const currentStorageProvider = isDemo ? StorageProvider.LOCAL_STORAGE : StorageProvider.DATABASE;
-
 // Get current auth state - whether a user is logged in or not
 export const getIsAuthenticated = () => {
   return !!localStorage.getItem('supabase.auth.token');
 };
+
+// Get current storage provider based on auth state
+export const getCurrentStorageProvider = (): StorageProvider => {
+  if (isDemo) return StorageProvider.LOCAL_STORAGE;
+  return getIsAuthenticated() ? StorageProvider.DATABASE : StorageProvider.IN_MEMORY;
+};
+
+// The current storage provider based on demo mode and authentication
+export const currentStorageProvider = getCurrentStorageProvider();
 
 // Show test data for visitors only, not for authenticated users
 export const SHOW_TEST_DATA_FOR_VISITORS = true;
