@@ -89,8 +89,9 @@ const VisitorRecommendationsManager = () => {
           </div>
           {visitorRecommendationsCount > 0 && (
             <div className="flex justify-center mt-8">
+              <p>Create an account to save these recommendations</p>
               <Button asChild className="px-6">
-                <Link to="/auth">Create account to save</Link>
+                <Link to="/auth">Create account</Link>
               </Button>
             </div>
           )}
