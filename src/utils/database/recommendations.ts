@@ -36,7 +36,8 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
   const userAuthenticated = await isAuthenticated();
   const session = await getCurrentSession();
   
-  // Check if we're in "demo" mode - URL contains /recommendations
+  // Determine if we're in "demo" mode (URL contains "/recommendations")
+  // This is for the dedicated recommendation listing page
   const isDemo = typeof window !== 'undefined' && window.location.pathname === '/recommendations';
   
   if (userAuthenticated && session) {
@@ -99,9 +100,9 @@ export const getRecommendations = async (): Promise<Recommendation[]> => {
     // Copy visitor recommendations to avoid reference issues
     const visitorRecs = [...visitorRecommendationsStore];
     
-    // If in demo mode, return only mock recommendations
+    // For the demo page at /recommendations, only show mock recommendations
     if (isDemo) {
-      console.log('In demo mode, returning only mock recommendations');
+      console.log('In demo mode, returning ONLY mock recommendations (excluding visitor recommendations)');
       return [...filteredMockRecommendations];
     }
     
