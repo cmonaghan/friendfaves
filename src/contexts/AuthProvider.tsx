@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/hooks/useRecommendationQueries";
 
 type AuthContextType = {
   session: Session | null;
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     // Get initial session
@@ -47,6 +50,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
         console.log("Auth state change:", event, newSession);
+        
+        // Clear all queries when auth state changes
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          // Invalidate all queries to force refetch with correct auth state
+          queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
+          queryClient.invalidateQueries({ queryKey: queryKeys.people });
+          queryClient.invalidateQueries({ queryKey: queryKeys.customCategories });
+        }
+        
         setSession(newSession);
         setUser(newSession?.user ?? null);
         setIsLoading(false);
@@ -56,7 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [queryClient]);
 
   const signOut = async () => {
     try {

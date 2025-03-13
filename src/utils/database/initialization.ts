@@ -17,7 +17,8 @@ export let visitorCustomCategoriesStore: any[] = [];
  * Initializes the database storage
  */
 export const initializeDatabaseStorage = async (): Promise<void> => {
-  if (initialized) return;
+  // Reset initialization flag when called to ensure proper re-initialization on auth state changes
+  initialized = false;
   
   console.log('Initializing database storage with config:', {
     host: dbConfig.host,
@@ -54,6 +55,19 @@ export const initializeDatabaseStorage = async (): Promise<void> => {
     console.error('Failed to initialize database connection:', error);
     throw new Error('Database connection failed');
   }
+};
+
+/**
+ * Resets the database initialization state
+ * This should be called when auth state changes
+ */
+export const resetDatabaseInitialization = (): void => {
+  initialized = false;
+  recommendationsStore = [];
+  peopleStore = [];
+  visitorRecommendationsStore = [];
+  visitorCustomCategoriesStore = [];
+  console.log('Database initialization state reset');
 };
 
 /**
