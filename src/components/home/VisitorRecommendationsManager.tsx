@@ -5,22 +5,24 @@ import { Button } from '@/components/ui/button';
 import { getRecommendations } from '@/utils/storage';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
+import RecommendationCard from '@/components/RecommendationCard';
+import { Recommendation } from '@/utils/types';
 
 const MAX_VISITOR_RECOMMENDATIONS = 3;
 
 const VisitorRecommendationsManager = () => {
-  const [visitorRecommendationsCount, setVisitorRecommendationsCount] = useState(0);
+  const [visitorRecommendations, setVisitorRecommendations] = useState<Recommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadVisitorRecommendations = async () => {
     setIsLoading(true);
     try {
       const recommendations = await getRecommendations();
-      // Filter out mock recommendations to only count visitor-added ones
+      // Filter out mock recommendations to only get visitor-added ones
       const visitorRecs = recommendations.filter(rec => 
         !rec.id.startsWith('mock-') && !rec.id.startsWith('demo-')
       );
-      setVisitorRecommendationsCount(visitorRecs.length);
+      setVisitorRecommendations(visitorRecs);
     } catch (error) {
       console.error("Error loading recommendations:", error);
     } finally {
@@ -35,6 +37,8 @@ const VisitorRecommendationsManager = () => {
   if (isLoading) {
     return <div className="flex justify-center py-8">Loading...</div>;
   }
+
+  const visitorRecommendationsCount = visitorRecommendations.length;
 
   if (visitorRecommendationsCount >= MAX_VISITOR_RECOMMENDATIONS) {
     return (
@@ -62,14 +66,30 @@ const VisitorRecommendationsManager = () => {
   }
 
   return (
-    <div className="mt-4 text-center">
-      <p className="text-muted-foreground mb-3">
-        You've saved {visitorRecommendationsCount} of {MAX_VISITOR_RECOMMENDATIONS} recommendations.
-      </p>
-      {visitorRecommendationsCount > 0 && (
-        <Button asChild variant="outline">
-          <Link to="/recommendations">View My Recommendations</Link>
-        </Button>
+    <div className="mt-8">
+      {visitorRecommendationsCount > 0 ? (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-center">Your Saved Recommendations</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            {visitorRecommendations.map(recommendation => (
+              <RecommendationCard key={recommendation.id} recommendation={recommendation} />
+            ))}
+          </div>
+          <div className="flex justify-center mt-8">
+            <Button asChild variant="outline" className="mx-2">
+              <Link to="/recommendations">View All ({visitorRecommendationsCount})</Link>
+            </Button>
+            {visitorRecommendationsCount < MAX_VISITOR_RECOMMENDATIONS && (
+              <div className="text-muted-foreground flex items-center ml-4">
+                {visitorRecommendationsCount} of {MAX_VISITOR_RECOMMENDATIONS} recommendations saved
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="text-center text-muted-foreground mt-4">
+          No recommendations saved yet. Use the form above to add your first recommendation.
+        </div>
       )}
     </div>
   );
