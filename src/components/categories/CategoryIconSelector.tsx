@@ -1,7 +1,7 @@
 
 import { LucideIcon } from "lucide-react";
 import { 
-  Store, Headphones, PlaneTakeoff, MapPin, Music, Building, Gift, Newspaper, Binoculars, Rocket 
+  Store, Headphones, PlaneTakeoff, MapPin, Music, Building, Gift, Newspaper, Binoculars, Rocket, HelpCircle 
 } from 'lucide-react';
 import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
