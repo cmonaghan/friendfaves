@@ -28,7 +28,7 @@ const HeroSection = () => {
           </Button>
         </div>
         <p className="mt-6 text-base text-muted-foreground max-w-2xl mx-auto">
-          Try it out with sample data below. Any recommendations you create as a guest will be reset when you refresh the page.
+          Try out the demo using sample data below. Any recommendations you create will be reset when you refresh the page.
         </p>
       </div>
     </section>
