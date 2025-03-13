@@ -66,7 +66,7 @@ const VisitorRecommendationsManager = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild size="lg" className="w-full">
-              <Link to="/auth">Create Account</Link>
+              <Link to="/auth?tab=register">Create Account</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="w-full">
               <Link to="/recommendations">View My Recommendations</Link>
@@ -93,7 +93,7 @@ const VisitorRecommendationsManager = () => {
                 Create an account to save these recommendations
               </p>
               <Button asChild className="px-8">
-                <Link to="/auth">Create account</Link>
+                <Link to="/auth?tab=register">Create account</Link>
               </Button>
             </div>
           )}

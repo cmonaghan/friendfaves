@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,13 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
+  
+  // Get the tab from the URL query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const defaultTab = queryParams.get("tab") === "register" ? "register" : "login";
+  const [activeTab, setActiveTab] = useState(defaultTab);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +101,7 @@ const Auth = () => {
           <CardDescription>Manage your recommendations</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
