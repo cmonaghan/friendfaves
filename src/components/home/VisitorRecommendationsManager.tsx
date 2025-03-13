@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { getRecommendations } from '@/utils/storage';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Save } from 'lucide-react';
 import RecommendationCard from '@/components/RecommendationCard';
 import { Recommendation } from '@/utils/types';
 
@@ -90,8 +90,12 @@ const VisitorRecommendationsManager = () => {
           {visitorRecommendationsCount > 0 && (
             <div className="flex flex-col items-center justify-center mt-8 space-y-4">
               <p className="text-base text-muted-foreground">
-                Create an account to save these recommendations
+                Create an account to save these recommendations and access them from any device
               </p>
+              <div className="flex items-center gap-2 text-sm text-emerald-600 mb-2">
+                <Save size={16} />
+                <span>Your recommendations will be automatically transferred when you create an account</span>
+              </div>
               <Button asChild className="px-8">
                 <Link to="/auth?tab=register">Create account</Link>
               </Button>

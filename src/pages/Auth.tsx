@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/useRecommendationQueries";
 import { resetDatabaseInitialization } from "@/utils/database/initialization";
+import { getRecommendations, addRecommendation } from "@/utils/storage";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -61,6 +62,54 @@ const Auth = () => {
     }
   };
 
+  // Transfer visitor recommendations to the user's account
+  const transferVisitorRecommendations = async (userId: string) => {
+    try {
+      // Get all visitor recommendations from storage
+      const recommendations = await getRecommendations();
+      
+      // Filter out visitor recommendations (those not starting with mock- or demo-)
+      const visitorRecs = recommendations.filter(rec => 
+        !rec.id.startsWith('mock-') && !rec.id.startsWith('demo-') && 
+        isNaN(Number(rec.id))
+      );
+      
+      if (visitorRecs.length === 0) {
+        console.log("No visitor recommendations to transfer");
+        return;
+      }
+      
+      console.log(`Transferring ${visitorRecs.length} recommendations to user account`);
+      
+      // Add each recommendation to the user's account
+      const transferPromises = visitorRecs.map(async (rec) => {
+        try {
+          // Create a new recommendation with the same data but let the system generate a new ID
+          const newRec = {
+            ...rec,
+            id: crypto.randomUUID(), // Generate a new ID for the recommendation
+          };
+          
+          await addRecommendation(newRec);
+          return true;
+        } catch (error) {
+          console.error("Error transferring recommendation:", error);
+          return false;
+        }
+      });
+      
+      await Promise.all(transferPromises);
+      
+      // Invalidate recommendations query to refresh the data
+      queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
+      
+      toast.success(`Transferred ${visitorRecs.length} recommendations to your account!`);
+    } catch (error) {
+      console.error("Error transferring visitor recommendations:", error);
+      toast.error("Failed to transfer your recommendations");
+    }
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -71,7 +120,7 @@ const Auth = () => {
     
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -83,6 +132,20 @@ const Auth = () => {
       });
 
       if (error) throw error;
+      
+      // If we have a session, it means the user was automatically signed in
+      if (data.session) {
+        // Transfer visitor recommendations to the new user account
+        await transferVisitorRecommendations(data.session.user.id);
+        
+        // Reset database initialization and refresh data
+        resetDatabaseInitialization();
+        queryClient.invalidateQueries({ queryKey: queryKeys.recommendations });
+        queryClient.invalidateQueries({ queryKey: queryKeys.people });
+        queryClient.invalidateQueries({ queryKey: queryKeys.customCategories });
+        
+        navigate("/");
+      }
       
       toast.success("Account created! Check your email for confirmation.");
     } catch (error: any) {
