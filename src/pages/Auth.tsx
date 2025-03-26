@@ -49,7 +49,7 @@ const Auth = () => {
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle>RecTrackr</CardTitle>
+          <CardTitle>FriendFaves</CardTitle>
           <CardDescription>Manage your recommendations</CardDescription>
         </CardHeader>
         <CardContent>
