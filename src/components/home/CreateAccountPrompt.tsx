@@ -1,7 +1,6 @@
 
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
 
 const CreateAccountPrompt = () => {
   return (
@@ -9,10 +8,6 @@ const CreateAccountPrompt = () => {
       <p className="text-base text-muted-foreground">
         Create an account to save these recommendations and access them from any device
       </p>
-      <div className="flex items-center gap-2 text-sm text-emerald-600 mb-2">
-        <Save size={16} />
-        <span>Your recommendations will be automatically transferred when you create an account</span>
-      </div>
       <Button asChild className="px-8">
         <Link to="/auth?tab=register">Create account</Link>
       </Button>
