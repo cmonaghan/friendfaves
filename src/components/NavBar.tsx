@@ -72,7 +72,7 @@ const NavBar = () => {
               <span className="bg-primary text-primary-foreground p-1 rounded">
                 <Book size={16} />
               </span>
-              <span>RecTrackr</span>
+              <span>FriendFaves</span>
             </Link>
           </div>
           
